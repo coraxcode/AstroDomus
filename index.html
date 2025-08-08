@@ -262,7 +262,11 @@ const AstrologyChart = (() => {
             if (tool === 'eraser' && state.mode === 'draw') {
                 const rect = CONFIG.canvas.getBoundingClientRect();
                 const eraserSize = parseInt(document.getElementById('drawSize')?.value || 10);
-                indicator.style.cssText = `position:absolute;left:${rect.left + window.scrollX + x - eraserSize * 2}px;top:${rect.top + window.scrollY + y - eraserSize * 2}px;width:${eraserSize * 4}px;height:${eraserSize * 4}px;border:2px dashed #fff;border-radius:50%;pointer-events:none;display:block`;
+                // Convert canvas coordinates to screen coordinates and center the indicator
+                const screenX = rect.left + window.scrollX + (x * rect.width / CONFIG.canvas.width);
+                const screenY = rect.top + window.scrollY + (y * rect.height / CONFIG.canvas.height);
+                const indicatorSize = eraserSize * 4;
+                indicator.style.cssText = `position:absolute;left:${screenX - indicatorSize / 2}px;top:${screenY - indicatorSize / 2}px;width:${indicatorSize}px;height:${indicatorSize}px;border:2px dashed #fff;border-radius:50%;pointer-events:none;display:block`;
             } else {
                 indicator.style.display = 'none';
             }
