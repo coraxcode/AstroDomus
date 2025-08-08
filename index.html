@@ -21,6 +21,7 @@
                     <option value="♀">♀ Venus</option><option value="♂">♂ Mars</option><option value="♃">♃ Jupiter</option>
                     <option value="♄">♄ Saturn</option><option value="☊">☊ North Node</option><option value="☋">☋ South Node</option>
                     <option value="⦻">⦻ Part of Fortune</option>
+                    <option value="℞">℞ Retrograde</option>
                 </select>
             </div>
             <div class="draw-controls" id="drawControls" style="display:none;">
@@ -532,6 +533,7 @@ const AstrologyChart = (() => {
                     const signIndex = Utils.getSignFromAngle(planet.angle);
                     const dignity = Utils.getDignity(planet.symbol, signIndex);
                     
+                    if (planet.showCircle !== false) {
                     if (checkElement('showDignities')) {
                         ctx.strokeStyle = Utils.getDignityColor(dignity);
                         ctx.lineWidth = 4;
@@ -539,14 +541,14 @@ const AstrologyChart = (() => {
                         ctx.strokeStyle = state.mode === 'planets' ? (isSelected ? '#FF6666' : '#FFF') : '#666';
                         ctx.lineWidth = state.mode === 'planets' ? (isSelected ? 4 : 3) : 2;
                     }
-                    
+
                     ctx.fillStyle = planet.color;
                     ctx.beginPath();
                     ctx.arc(pos.x, pos.y, CONFIG.isMobile ? 15 : 18, 0, Math.PI * 2);
                     ctx.fill();
                     ctx.stroke();
-                    
-                    ctx.fillStyle = '#000';
+                }
+                    ctx.fillStyle = planet.textColor || '#000';
                     ctx.font = CONFIG.isMobile ? '18px Arial' : 'bold 24px Arial';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
@@ -967,14 +969,18 @@ const AstrologyChart = (() => {
             planetSelect.addEventListener('change', e => {
                 if (!e.target.value) return;
                 const planetData = {
-                    symbols: {'☉':'Sun','☽':'Moon','☿':'Mercury','♀':'Venus','♂':'Mars','♃':'Jupiter','♄':'Saturn','☊':'North Node','☋':'South Node','⦻':'Part of Fortune'},
-                    colors: {'☉':'#FFD700','☽':'#C0C0C0','☿':'#FFA500','♀':'#32CD32','♂':'#FF4500','♃':'#4169E1','♄':'#8B4513','☊':'#FFE4B5','☋':'#DDA0DD','⦻':'#20B2AA'}
+                    symbols: {'☉':'Sun','☽':'Moon','☿':'Mercury','♀':'Venus','♂':'Mars','♃':'Jupiter','♄':'Saturn','☊':'North Node','☋':'South Node','⦻':'Part of Fortune', '℞':'Retrograde'},
+                    colors: {'☉':'#FFD700','☽':'#C0C0C0','☿':'#FFA500','♀':'#32CD32','♂':'#FF4500','♃':'#4169E1','♄':'#8B4513','☊':'#FFE4B5','☋':'#DDA0DD','⦻':'#20B2AA', '℞':'#20B2AA'},
+                    textColors: {'☉':'#000','☽':'#000','☿':'#000','♀':'#000','♂':'#000','♃':'#000','♄':'#000','☊':'#000','☋':'#000','⦻':'#000', '℞':'#FF0000'},
+                    showCircle: {'☉':true,'☽':true,'☿':true,'♀':true,'♂':true,'♃':true,'♄':true,'☊':true,'☋':true,'⦻':true, '℞':false}
                 };
                 planets.push({
                     symbol: e.target.value,
                     name: planetData.symbols[e.target.value],
                     angle: Math.random() * 360,
-                    color: planetData.colors[e.target.value]
+                    color: planetData.colors[e.target.value],
+                    textColor: planetData.textColors[e.target.value] || '#000',
+                    showCircle: planetData.showCircle[e.target.value] !== false
                 });
                 e.target.value = '';
                 Renderer.drawChart();
