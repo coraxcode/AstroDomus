@@ -1,3 +1,10 @@
+/* Golden Ratio Enhanced Astrology Teaching Interface
+   Optimized for educational use with emphasis on chart visibility
+   φ (phi) = 1.618 - Professional mathematical harmony
+   FIXED: Keywords section height & Mobile touch interactions
+*/
+
+/* Import clean, professional font */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
 
 :root {
@@ -60,7 +67,7 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Main container - Desktop-first layout (UNCHANGED) */
+/* Main container - Desktop-first layout */
 .container { 
   max-width: 1600px; 
   margin: 0 auto; 
@@ -73,7 +80,7 @@ body {
   align-items: start;
 }
 
-/* Chart section - Primary focus area (UNCHANGED) */
+/* Chart section - Primary focus area */
 .chart-section { 
   display: flex;
   flex-direction: column;
@@ -90,7 +97,7 @@ body {
   border-color: var(--border-hover);
 }
 
-/* FIXED: Keywords section (UNCHANGED) */
+/* FIXED: Keywords section - Better height control and mobile optimization */
 .keywords-section { 
   background: var(--bg-card); 
   border: 1px solid var(--border-color);
@@ -124,8 +131,8 @@ canvas {
   display: block;
   transition: all 0.3s ease;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  /* FIXED: Critical - prevent browser interference with chart interactions */
-  touch-action: none;
+  /* FIXED: Ensure canvas handles touch events properly */
+  touch-action: manipulation;
   cursor: crosshair;
 }
 
@@ -135,7 +142,7 @@ canvas:focus {
   outline-offset: 2px;
 }
 
-/* Controls organization - Improved grouping (UNCHANGED) */
+/* Controls organization - Improved grouping */
 .controls { 
   display: flex; 
   gap: var(--space-sm); 
@@ -148,7 +155,7 @@ canvas:focus {
   min-height: 44px;
 }
 
-/* Primary mode buttons - Enhanced visibility (UNCHANGED) */
+/* Primary mode buttons - Enhanced visibility */
 .controls:first-child {
   background: var(--bg-control);
   padding: var(--space-sm) var(--space-base);
@@ -157,7 +164,7 @@ canvas:focus {
   margin-bottom: var(--space-xs);
 }
 
-/* Checkbox groups - Better organization (UNCHANGED) */
+/* Checkbox groups - Better organization */
 .controls:not(:first-child) {
   background: var(--bg-card);
   padding: var(--space-sm);
@@ -166,7 +173,7 @@ canvas:focus {
   margin: var(--space-xs) 0;
 }
 
-/* Enhanced buttons (UNCHANGED) */
+/* Enhanced buttons */
 button { 
   padding: calc(10px * var(--phi-inv)) calc(18px * var(--phi)); /* ~6px 29px */
   background: var(--bg-control); 
@@ -204,7 +211,7 @@ button:active {
   box-shadow: 0 2px 8px rgba(74, 144, 226, 0.3);
 }
 
-/* Select elements (UNCHANGED) */
+/* Select elements */
 select { 
   padding: calc(8px * var(--phi-inv)) var(--space-sm); 
   background: var(--bg-control); 
@@ -225,7 +232,7 @@ select:hover, select:focus {
   outline: none;
 }
 
-/* FIXED: Checkbox labels - Enhanced for mobile touch (UNCHANGED) */
+/* FIXED: Checkbox labels - Enhanced for mobile touch */
 label { 
   display: flex; 
   align-items: center; 
@@ -248,7 +255,7 @@ label:hover {
   background: rgba(255, 215, 0, 0.08);
 }
 
-/* FIXED: Enhanced checkboxes for mobile (UNCHANGED) */
+/* FIXED: Enhanced checkboxes for mobile */
 input[type="checkbox"] {
   width: 20px;   /* FIXED: Larger touch target */
   height: 20px;  /* FIXED: Larger touch target */
@@ -258,7 +265,7 @@ input[type="checkbox"] {
   touch-action: manipulation;
 }
 
-/* Input elements (UNCHANGED) */
+/* Input elements */
 input[type="color"] { 
   width: 44px;   /* FIXED: Better touch target */
   height: 44px;  /* FIXED: Better touch target */
@@ -283,7 +290,7 @@ input[type="range"] {
   touch-action: manipulation;
 }
 
-/* Info display - Prominent and clear (UNCHANGED) */
+/* Info display - Prominent and clear */
 #info { 
   color: var(--accent-gold); 
   font-size: 18px;
@@ -302,7 +309,7 @@ input[type="range"] {
   max-width: 800px;
 }
 
-/* FIXED: Keywords styling - Optimized height and scrolling (UNCHANGED) */
+/* FIXED: Keywords styling - Optimized height and scrolling */
 .keywords {
   display: flex;
   flex-direction: column;
@@ -322,7 +329,7 @@ input[type="range"] {
   border-bottom: 2px solid rgba(255, 215, 0, 0.2);
 }
 
-/* FIXED: Improved scrollable area (UNCHANGED) */
+/* FIXED: Improved scrollable area */
 .keywords ul { 
   list-style: none; 
   padding: 0; 
@@ -370,7 +377,7 @@ input[type="range"] {
   flex-shrink: 0;
 }
 
-/* Draw controls (UNCHANGED) */
+/* Draw controls */
 .draw-controls { 
   background: var(--bg-control); 
   padding: var(--space-sm); 
@@ -386,7 +393,7 @@ input[type="range"] {
   min-height: 44px; /* FIXED: Better touch target */
 }
 
-/* Eraser indicator (UNCHANGED) */
+/* Eraser indicator */
 .eraser-indicator { 
   position: absolute; 
   border: 2px solid #ff6666; 
@@ -396,7 +403,7 @@ input[type="range"] {
   background: rgba(255, 102, 102, 0.1); 
 }
 
-/* Custom scrollbar for keywords (UNCHANGED) */
+/* Custom scrollbar for keywords */
 .keywords ul::-webkit-scrollbar {
   width: 8px; /* FIXED: Slightly larger for mobile */
 }
@@ -416,7 +423,7 @@ input[type="range"] {
   background: var(--accent-gold-dim);
 }
 
-/* Focus states for accessibility (UNCHANGED) */
+/* Focus states for accessibility */
 button:focus-visible,
 select:focus-visible,
 input:focus-visible,
@@ -426,13 +433,13 @@ canvas:focus-visible {
   outline-offset: 2px;
 }
 
-/* Selection styling (UNCHANGED) */
+/* Selection styling */
 ::selection {
   background: rgba(255, 215, 0, 0.2);
   color: var(--accent-gold);
 }
 
-/* Smooth scrolling (UNCHANGED) */
+/* Smooth scrolling */
 html {
   scroll-behavior: smooth;
 }
@@ -592,139 +599,6 @@ html {
     /* FIXED: Even more constrained on very small screens */
     max-height: var(--keywords-max-height-mobile);
     min-height: 200px;
-  }
-}
-
-/* FIXED: Mobile landscape - Better layout and spacing */
-@media (max-width: 968px) and (orientation: landscape) {
-  :root {
-    /* FIXED: Better chart sizing for landscape */
-    --chart-size-mobile: min(55vw, 75vh, 550px);
-    --keywords-max-height-mobile: 80vh;
-  }
-  
-  body {
-    /* FIXED: Better viewport handling in landscape */
-    min-height: 100vh;
-    font-size: 13px; /* FIXED: Slightly smaller text for landscape */
-  }
-  
-  .container {
-    /* FIXED: Use horizontal layout in landscape */
-    display: grid;
-    grid-template-columns: 1fr 280px; /* FIXED: Narrower sidebar for landscape */
-    grid-template-rows: auto;
-    gap: var(--space-sm);
-    padding: var(--space-xs) var(--space-sm);
-    align-items: start;
-    max-height: 100vh;
-    overflow: hidden;
-  }
-  
-  .chart-section {
-    order: 1;
-    padding: var(--space-xs);
-    gap: var(--space-xs); /* FIXED: Tighter spacing */
-    height: 100vh;
-    overflow-y: auto;
-    overflow-x: hidden;
-  }
-  
-  .keywords-section {
-    order: 2;
-    position: static;
-    margin-top: 0;
-    padding: var(--space-sm);
-    max-height: var(--keywords-max-height-mobile);
-    min-height: 250px;
-    overflow: auto; /* FIXED: Enable scrolling */
-  }
-  
-  canvas {
-    width: var(--chart-size-mobile);
-    height: var(--chart-size-mobile);
-    max-width: var(--chart-size-mobile);
-    max-height: var(--chart-size-mobile);
-  }
-  
-  .controls {
-    max-width: var(--chart-size-mobile);
-    gap: 4px; /* FIXED: Tighter gaps */
-    padding: 4px; /* FIXED: Less padding */
-  }
-  
-  .controls:not(:first-child) {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); /* FIXED: Better fit */
-    gap: 3px; /* FIXED: Even tighter */
-    padding: 6px;
-  }
-  
-  .controls:first-child {
-    padding: 6px var(--space-sm);
-    gap: 6px;
-  }
-  
-  button {
-    padding: 4px 8px; /* FIXED: Smaller padding */
-    font-size: 12px; /* FIXED: Smaller text */
-    min-height: 32px; /* FIXED: Smaller height */
-    min-width: 32px;
-  }
-  
-  label {
-    font-size: 12px; /* FIXED: Smaller text */
-    padding: 2px 4px; /* FIXED: Minimal padding */
-    min-height: 32px; /* FIXED: Consistent height */
-    gap: 4px; /* FIXED: Smaller gap */
-  }
-  
-  input[type="checkbox"] {
-    width: 16px; /* FIXED: Smaller checkboxes */
-    height: 16px;
-  }
-  
-  #info {
-    font-size: 14px; /* FIXED: Smaller info text */
-    padding: var(--space-xs);
-    min-height: 32px;
-    max-width: var(--chart-size-mobile);
-  }
-  
-  .draw-controls {
-    max-width: var(--chart-size-mobile);
-    padding: var(--space-xs);
-    gap: 6px; /* FIXED: Smaller gaps */
-  }
-  
-  .keywords h3 {
-    font-size: 16px; /* FIXED: Smaller heading */
-    margin-bottom: var(--space-xs);
-  }
-  
-  .keywords li {
-    font-size: 12px; /* FIXED: Smaller keyword text */
-    padding: 2px 0; /* FIXED: Tighter spacing */
-  }
-  
-  .keywords p {
-    font-size: 12px; /* FIXED: Smaller instructional text */
-  }
-  
-  select {
-    font-size: 12px; /* FIXED: Smaller select text */
-    min-height: 32px;
-    padding: 4px 8px;
-  }
-  
-  input[type="range"] {
-    width: 80px; /* FIXED: Smaller range input */
-    height: 32px;
-  }
-  
-  input[type="color"] {
-    width: 32px; /* FIXED: Smaller color picker */
-    height: 32px;
   }
 }
 
