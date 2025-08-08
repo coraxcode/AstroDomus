@@ -583,6 +583,7 @@ html {
 
 @media (max-width: 480px) {
   :root {
+    --chart-size-mobile: min(90vw, 50vh, 400px);
     --keywords-max-height-mobile: 35vh;
   }
   
