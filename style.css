@@ -1,6 +1,6 @@
-/* Golden Ratio Minimalist Enhancement CSS
-   Based on original design with mathematical harmony
-   φ (phi) = 1.618 - Subtle professional improvements
+/* Golden Ratio Enhanced Astrology Teaching Interface
+   Optimized for educational use with emphasis on chart visibility
+   φ (phi) = 1.618 - Professional mathematical harmony
 */
 
 /* Import clean, professional font */
@@ -11,148 +11,192 @@
   --phi: 1.618;
   --phi-inv: 0.618;
   
-  /* Golden Ratio Spacing (based on original 20px) */
-  --space-xs: 12px;    /* 20px / φ */
-  --space-sm: 15px;    /* original small */
-  --space-base: 20px;  /* original base */
-  --space-md: 32px;    /* 20px × φ */
-  --space-lg: 52px;    /* 20px × φ² */
+  /* Golden Ratio Spacing System */
+  --space-xs: 8px;     /* Minimal spacing */
+  --space-sm: 12px;    /* Small spacing */
+  --space-base: 20px;  /* Base unit */
+  --space-md: 32px;    /* Medium spacing (20px × φ) */
+  --space-lg: 52px;    /* Large spacing (20px × φ²) */
+  --space-xl: 84px;    /* Extra large (20px × φ³) */
   
-  /* Enhanced colors (keeping original feel) */
-  --bg-dark: #0f0f0f;
+  /* Professional Color Palette */
+  --bg-dark: #0a0a0a;
+  --bg-primary: #121212;
   --bg-card: #1a1a1a;
   --bg-control: #2a2a2a;
   --bg-hover: #3a3a3a;
+  --bg-active: #404040;
   --border-color: #333;
   --border-hover: #555;
-  --text-primary: #e0e0e0;
-  --text-secondary: #ccc;
+  --border-focus: #777;
+  --text-primary: #e8e8e8;
+  --text-secondary: #b8b8b8;
+  --text-muted: #888;
   --accent-gold: #FFD700;
+  --accent-gold-dim: #B8941F;
   --accent-blue: #4a90e2;
+  --accent-blue-dim: #3a70c2;
+  
+  /* Chart sizing variables */
+  --chart-size-mobile: min(90vw, 60vh, 600px);
+  --sidebar-width: 320px;
 }
 
-/* Body - Minimal enhancement */
+/* Reset and base styles */
+* {
+  box-sizing: border-box;
+}
+
 body { 
   margin: 0; 
-  padding: var(--space-base); 
+  padding: 0;
   background: var(--bg-dark); 
-  font-family: 'Inter', Arial, sans-serif; 
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
   color: var(--text-primary);
   line-height: var(--phi);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
 }
 
-/* Container - Perfect alignment setup */
+/* Main container - Desktop-first layout */
 .container { 
-  max-width: 1400px; 
+  max-width: 1600px; 
   margin: 0 auto; 
-  text-align: center; 
-  display: flex; 
+  padding: var(--space-base);
+  display: grid;
+  grid-template-columns: 1fr var(--sidebar-width);
+  grid-template-rows: auto;
   gap: var(--space-md);
-  align-items: flex-start; /* Start from top, let sections handle their own height */
+  min-height: 100vh;
+  align-items: start;
 }
 
-/* Chart section - Container for all chart elements */
+/* Chart section - Primary focus area */
 .chart-section { 
-  flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 100vh; /* Ensures full viewport height utilization */
+  align-items: center;
+  gap: var(--space-base);
+  padding: var(--space-sm);
+  background: var(--bg-primary);
+  border-radius: calc(12px * var(--phi-inv));
+  border: 1px solid var(--border-color);
+  transition: border-color 0.3s ease;
 }
 
-/* Keywords section - Matches chart section perfectly */
+.chart-section:hover {
+  border-color: var(--border-hover);
+}
+
+/* Keywords section - Optimized sidebar with scrolling */
 .keywords-section { 
-  width: calc(300px * var(--phi)); /* ~485px */
   background: var(--bg-card); 
   border: 1px solid var(--border-color);
-  border-radius: calc(8px * var(--phi-inv)); 
+  border-radius: calc(12px * var(--phi-inv)); 
   padding: var(--space-base);
-  text-align: left;
-  transition: border-color 0.3s ease;
   display: flex;
   flex-direction: column;
-  min-height: 100vh; /* Same as chart-section */
-  max-height: 100vh; /* Prevents overflow */
-  overflow: hidden;
+  height: 100vh;
   position: sticky;
-  top: 0; /* Sticks to top for perfect alignment */
-}
-
-/* Keywords content wrapper for better scrolling */
-.keywords {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.keywords ul {
-  flex: 1; /* Takes remaining space */
-  overflow-y: auto; /* Individual scroll for keywords */
-  padding-right: 8px; /* Space for scrollbar */
+  top: 0;
+  transition: border-color 0.3s ease;
+  overflow: hidden;
 }
 
 .keywords-section:hover {
   border-color: var(--border-hover);
 }
 
-/* Canvas - Subtle enhancement */
+/* Chart canvas - Maximum emphasis */
 canvas { 
-  border: 1px solid var(--border-color); 
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  max-width: 800px;
+  max-height: 800px;
+  border: 2px solid var(--border-color); 
   background: var(--bg-card); 
   border-radius: calc(8px * var(--phi-inv)); 
-  display: block; 
-  margin: 0 auto;
-  transition: border-color 0.3s ease;
+  display: block;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
-canvas:hover {
-  border-color: var(--border-hover);
-}
 
-/* Controls - Golden ratio spacing */
+
+/* Controls organization - Improved grouping */
 .controls { 
-  margin: var(--space-base) 0; 
   display: flex; 
-  gap: var(--space-xs); /* Tighter, more refined */
+  gap: var(--space-sm); 
   align-items: center; 
   flex-wrap: wrap; 
-  justify-content: center; 
+  justify-content: center;
+  width: 100%;
+  max-width: 800px;
 }
 
-/* Buttons - Refined with golden proportions */
+/* Primary mode buttons - Enhanced visibility */
+.controls:first-child {
+  background: var(--bg-control);
+  padding: var(--space-sm) var(--space-base);
+  border-radius: calc(8px * var(--phi-inv));
+  border: 1px solid var(--border-color);
+  margin-bottom: var(--space-xs);
+}
+
+/* Checkbox groups - Better organization */
+.controls:not(:first-child) {
+  background: var(--bg-card);
+  padding: var(--space-sm);
+  border-radius: calc(6px * var(--phi-inv));
+  border: 1px solid rgba(51, 51, 51, 0.5);
+  margin: var(--space-xs) 0;
+}
+
+/* Enhanced buttons */
 button { 
-  padding: calc(8px * var(--phi-inv)) calc(16px * var(--phi)); /* ~5px 26px */
+  padding: calc(10px * var(--phi-inv)) calc(18px * var(--phi)); /* ~6px 29px */
   background: var(--bg-control); 
   color: var(--text-primary); 
   border: 1px solid var(--border-color); 
-  border-radius: calc(4px * var(--phi-inv)); /* ~2.5px - more refined */
+  border-radius: calc(6px * var(--phi-inv)); 
   cursor: pointer;
   font-family: inherit;
-  font-size: 13px;
-  font-weight: 400;
+  font-size: 14px;
+  font-weight: 500;
   transition: all 0.2s ease;
+  white-space: nowrap;
+  min-height: 36px;
 }
 
 button:hover { 
   background: var(--bg-hover);
   border-color: var(--border-hover);
+  transform: translateY(-1px);
+}
+
+button:active {
+  transform: translateY(0);
 }
 
 .active { 
   background: var(--accent-blue) !important; 
   color: #fff !important;
   border-color: var(--accent-blue) !important;
+  box-shadow: 0 2px 8px rgba(74, 144, 226, 0.3);
 }
 
-/* Select elements - Consistent styling */
+/* Select elements */
 select { 
-  padding: calc(8px * var(--phi-inv)) 8px; 
+  padding: calc(8px * var(--phi-inv)) var(--space-sm); 
   background: var(--bg-control); 
   color: var(--text-primary); 
   border: 1px solid var(--border-color); 
   border-radius: calc(4px * var(--phi-inv));
   font-family: inherit;
   font-size: 13px;
+  min-height: 36px;
   transition: border-color 0.2s ease;
 }
 
@@ -161,28 +205,42 @@ select:hover, select:focus {
   outline: none;
 }
 
-/* Labels - Readable for teaching interface */
+/* Checkbox labels - Enhanced for teaching interface */
 label { 
   display: flex; 
   align-items: center; 
-  gap: calc(6px * var(--phi)); /* ~10px */
-  font-size: 14px; /* Back to original readable size */
+  gap: var(--space-xs);
+  font-size: 13px;
   cursor: pointer;
   transition: color 0.2s ease;
+  padding: 4px var(--space-xs);
+  border-radius: 4px;
+  white-space: nowrap;
+  user-select: none;
 }
 
 label:hover {
   color: var(--accent-gold);
+  background: rgba(255, 215, 0, 0.08);
 }
 
-/* Input elements - Refined proportions */
+/* Enhanced checkboxes */
+input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent-gold);
+  cursor: pointer;
+}
+
+/* Input elements */
 input[type="color"] { 
-  width: calc(40px * var(--phi-inv)); /* ~25px */
-  height: calc(30px * var(--phi-inv)); /* ~18px */
+  width: 32px;
+  height: 32px;
   border: 1px solid var(--border-color); 
   border-radius: calc(4px * var(--phi-inv)); 
   cursor: pointer;
   transition: border-color 0.2s ease;
+  padding: 2px;
 }
 
 input[type="color"]:hover {
@@ -190,54 +248,75 @@ input[type="color"]:hover {
 }
 
 input[type="range"] { 
-  width: calc(80px * var(--phi)); /* ~129px - more space */
+  width: 100px;
+  accent-color: var(--accent-gold);
 }
 
-/* Info display - Large and clear for teaching */
+/* Info display - Prominent and clear */
 #info { 
   color: var(--accent-gold); 
-  font-size: 16px; /* Back to original readable size */
-  margin: var(--space-sm) 0; 
+  font-size: 18px;
   font-weight: 500;
-  min-height: calc(24px * var(--phi)); 
+  text-align: center;
+  padding: var(--space-sm) var(--space-base);
+  background: var(--bg-control);
+  border-radius: calc(6px * var(--phi-inv));
+  border: 1px solid var(--border-color);
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   letter-spacing: 0.025em;
+  width: 100%;
+  max-width: 800px;
 }
 
-/* Keywords styling - Optimized for full-height viewing */
+/* Keywords styling - Optimized for learning */
+.keywords {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
 .keywords h3 { 
   color: var(--accent-gold); 
-  margin: 0 0 var(--space-sm) 0;
-  font-size: 18px;
+  margin: 0 0 var(--space-base) 0;
+  font-size: 20px;
   font-weight: 600;
   letter-spacing: 0.05em;
   text-align: center;
-  flex-shrink: 0; /* Prevents shrinking */
+  flex-shrink: 0;
+  padding-bottom: var(--space-sm);
+  border-bottom: 2px solid rgba(255, 215, 0, 0.2);
 }
 
 .keywords ul { 
   list-style: none; 
   padding: 0; 
   margin: 0;
-  flex: 1; /* Takes remaining space */
-  overflow-y: auto; /* Individual scroll for keywords */
-  padding-right: 8px; /* Space for scrollbar */
+  flex: 1;
+  overflow-y: auto;
+  padding-right: var(--space-xs);
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-gold) transparent;
 }
 
 .keywords li { 
-  padding: calc(4px * var(--phi-inv)) 0;
+  padding: var(--space-xs) 0;
   color: var(--text-secondary); 
   font-size: 14px;
   line-height: var(--phi);
-  transition: color 0.2s ease;
-  border-bottom: 1px solid rgba(51, 51, 51, 0.2);
-  margin-bottom: 2px; /* Small gap for better readability */
+  transition: all 0.2s ease;
+  border-bottom: 1px solid rgba(51, 51, 51, 0.3);
+  margin-bottom: 3px;
+  border-radius: 4px;
 }
 
 .keywords li:hover {
   color: var(--accent-gold);
-  background: rgba(255, 215, 0, 0.05);
-  padding-left: 8px;
-  border-radius: 3px;
+  background: rgba(255, 215, 0, 0.08);
+  padding-left: var(--space-sm);
+  transform: translateX(2px);
 }
 
 .keywords li:last-child {
@@ -245,26 +324,31 @@ input[type="range"] {
 }
 
 .keywords p {
-  color: #aaa;
+  color: var(--text-muted);
   font-size: 14px;
   line-height: var(--phi);
   text-align: center;
   font-style: italic;
-  margin: var(--space-sm) 0;
-  flex-shrink: 0; /* Prevents shrinking */
+  margin: var(--space-base) 0;
+  flex-shrink: 0;
 }
 
-/* Draw controls - Consistent styling */
+/* Draw controls */
 .draw-controls { 
   background: var(--bg-control); 
-  padding: var(--space-xs); 
-  border-radius: calc(4px * var(--phi-inv)); 
-  margin: var(--space-xs) 0;
+  padding: var(--space-sm); 
+  border-radius: calc(6px * var(--phi-inv)); 
   border: 1px solid var(--border-color);
-  gap: var(--space-xs);
+  gap: var(--space-sm);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+  max-width: 800px;
 }
 
-/* Eraser indicator - No changes needed */
+/* Eraser indicator */
 .eraser-indicator { 
   position: absolute; 
   border: 2px solid #ff6666; 
@@ -274,72 +358,7 @@ input[type="range"] {
   background: rgba(255, 102, 102, 0.1); 
 }
 
-/* Responsive - Perfect alignment maintained */
-@media (max-width: calc(1000px / var(--phi))) {
-  .container { 
-    flex-direction: column;
-    gap: var(--space-base);
-    align-items: center;
-  } 
-  
-  .chart-section {
-    min-height: auto; /* Remove viewport height constraint on mobile */
-    width: 100%;
-  }
-  
-  .keywords-section { 
-    width: 100%;
-    max-width: 600px;
-    min-height: auto; /* Remove viewport height constraint on mobile */
-    max-height: none;
-    position: static; /* Remove sticky on mobile */
-    order: -1; /* Put keywords first on mobile */
-  } 
-}
-
-@media (max-width: 500px) {
-  body {
-    padding: var(--space-xs);
-  }
-  
-  .container {
-    gap: var(--space-sm);
-  }
-  
-  .controls {
-    gap: calc(var(--space-xs) * var(--phi-inv));
-    margin: var(--space-sm) 0;
-  }
-  
-  button {
-    padding: calc(6px * var(--phi-inv)) var(--space-xs);
-    font-size: 12px;
-  }
-  
-  .keywords-section {
-    padding: var(--space-sm);
-  }
-  
-  canvas {
-    max-height: 60vh; /* Smaller on mobile */
-  }
-}
-
-/* Subtle focus states for accessibility */
-button:focus-visible,
-select:focus-visible,
-input:focus-visible {
-  outline: 2px solid var(--accent-gold);
-  outline-offset: 1px;
-}
-
-/* Selection color */
-::selection {
-  background: rgba(255, 215, 0, 0.2);
-  color: var(--accent-gold);
-}
-
-/* Custom scrollbar for keywords section */
+/* Custom scrollbar for keywords */
 .keywords ul::-webkit-scrollbar {
   width: 6px;
 }
@@ -355,7 +374,22 @@ input:focus-visible {
 }
 
 .keywords ul::-webkit-scrollbar-thumb:hover {
-  background: #b8941f;
+  background: var(--accent-gold-dim);
+}
+
+/* Focus states for accessibility */
+button:focus-visible,
+select:focus-visible,
+input:focus-visible,
+label:focus-visible {
+  outline: 2px solid var(--accent-gold);
+  outline-offset: 2px;
+}
+
+/* Selection styling */
+::selection {
+  background: rgba(255, 215, 0, 0.2);
+  color: var(--accent-gold);
 }
 
 /* Smooth scrolling */
@@ -363,9 +397,178 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Enhanced focus for better keyword navigation */
-.keywords li:focus {
-  outline: 2px solid var(--accent-gold);
-  outline-offset: 2px;
-  color: var(--accent-gold);
+/* RESPONSIVE DESIGN - Mobile optimization */
+@media (max-width: 1200px) {
+  :root {
+    --sidebar-width: 350px;
+  }
+  
+  .container {
+    padding: var(--space-sm);
+    gap: var(--space-base);
+  }
+}
+
+@media (max-width: 968px) {
+  .container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-base);
+    padding: var(--space-sm);
+  }
+  
+  .chart-section {
+    order: 1;
+  }
+  
+  .keywords-section {
+    order: 2;
+    position: static;
+    max-height: 50vh;
+    width: 100%;
+    margin-top: var(--space-base);
+  }
+  
+  canvas {
+    width: var(--chart-size-mobile);
+    height: var(--chart-size-mobile);
+  }
+  
+  .controls {
+    max-width: var(--chart-size-mobile);
+  }
+  
+  #info {
+    max-width: var(--chart-size-mobile);
+  }
+  
+  .draw-controls {
+    max-width: var(--chart-size-mobile);
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --chart-size-mobile: min(85vw, 55vh, 500px);
+  }
+  
+  body {
+    font-size: 14px;
+  }
+  
+  .container {
+    padding: var(--space-xs);
+    gap: var(--space-sm);
+  }
+  
+  .chart-section {
+    padding: var(--space-xs);
+    gap: var(--space-sm);
+  }
+  
+  .keywords-section {
+    padding: var(--space-sm);
+    max-height: 40vh;
+  }
+  
+  /* Organize checkboxes in mobile-friendly groups */
+  .controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-xs);
+    padding: var(--space-xs);
+  }
+  
+  .controls:not(:first-child) {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-xs);
+    align-items: start;
+  }
+  
+  label {
+    font-size: 12px;
+    padding: var(--space-xs);
+    justify-content: flex-start;
+  }
+  
+  button {
+    padding: var(--space-xs) var(--space-sm);
+    font-size: 13px;
+    min-height: 42px;
+  }
+  
+  .controls:first-child {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-xs);
+  }
+  
+  #info {
+    font-size: 16px;
+    padding: var(--space-sm);
+    min-height: 44px;
+  }
+  
+  .keywords h3 {
+    font-size: 18px;
+    margin-bottom: var(--space-sm);
+  }
+  
+  canvas {
+    border-width: 1px;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --chart-size-mobile: min(90vw, 50vh, 400px);
+  }
+  
+  .container {
+    padding: var(--space-xs);
+  }
+  
+  .controls:not(:first-child) {
+    grid-template-columns: 1fr;
+  }
+  
+  label {
+    font-size: 13px;
+  }
+  
+  button {
+    min-height: 40px;
+    font-size: 12px;
+  }
+  
+  .keywords-section {
+    max-height: 35vh;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --bg-dark: #000;
+    --bg-primary: #111;
+    --bg-card: #222;
+    --text-primary: #fff;
+    --border-color: #666;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  html {
+    scroll-behavior: auto;
+  }
 }
