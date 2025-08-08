@@ -208,32 +208,51 @@ const AstrologyChart = (() => {
             return Math.hypot(px - (x1 + param * C), py - (y1 + param * D));
         },
         eraseAtPoint: (x, y, eraserSize) => {
+            // Mobile optimization: Larger effective eraser size and more aggressive erasing
+            const effectiveSize = CONFIG.isMobile ? eraserSize * 1.5 : eraserSize;
             const pathsToRemove = [], newPathsToAdd = [];
+            
             state.drawingPaths.forEach((path, pathIndex) => {
                 if (path[0]?.type === 'line') {
-                    if (path.length >= 2 && DrawingSystem.getDistanceToLine(x, y, path[0].x, path[0].y, path[path.length - 1].x, path[path.length - 1].y) <= eraserSize / 2) {
-                        pathsToRemove.push(pathIndex);
+                    // Enhanced line erasing with mobile tolerance
+                    if (path.length >= 2) {
+                        const distance = DrawingSystem.getDistanceToLine(x, y, path[0].x, path[0].y, path[path.length - 1].x, path[path.length - 1].y);
+                        if (distance <= effectiveSize / 2) {
+                            pathsToRemove.push(pathIndex);
+                        }
                     }
                 } else {
+                    // Enhanced path erasing with mobile-friendly segmentation
                     const segments = [];
                     let currentSegment = [];
+                    let erased = false;
+                    
                     path.forEach(point => {
-                        if (Math.hypot(x - point.x, y - point.y) > eraserSize) {
+                        const distance = Math.hypot(x - point.x, y - point.y);
+                        if (distance > effectiveSize / 2) {
                             currentSegment.push(point);
                         } else {
-                            if (currentSegment.length > 1) segments.push([...currentSegment]);
+                            erased = true;
+                            if (currentSegment.length > (CONFIG.isMobile ? 1 : 2)) {
+                                segments.push([...currentSegment]);
+                            }
                             currentSegment = [];
                         }
                     });
-                    if (currentSegment.length > 1) segments.push(currentSegment);
-                    if (segments.length === 0) {
+                    
+                    if (currentSegment.length > (CONFIG.isMobile ? 1 : 2)) {
+                        segments.push(currentSegment);
+                    }
+                    
+                    if (erased) {
                         pathsToRemove.push(pathIndex);
-                    } else if (segments.length > 1 || segments[0].length !== path.length) {
-                        pathsToRemove.push(pathIndex);
-                        newPathsToAdd.push(...segments);
+                        if (segments.length > 0) {
+                            newPathsToAdd.push(...segments);
+                        }
                     }
                 }
             });
+            // Batch removal for performance
             pathsToRemove.reverse().forEach(index => state.drawingPaths.splice(index, 1));
             state.drawingPaths.push(...newPathsToAdd);
         },
@@ -259,14 +278,39 @@ const AstrologyChart = (() => {
         updateEraserIndicator: (x, y) => {
             const indicator = document.getElementById('eraserIndicator');
             const tool = document.getElementById('drawTool')?.value;
+            
             if (tool === 'eraser' && state.mode === 'draw') {
                 const rect = CONFIG.canvas.getBoundingClientRect();
                 const eraserSize = parseInt(document.getElementById('drawSize')?.value || 10);
-                // Convert canvas coordinates to screen coordinates and center the indicator
-                const screenX = rect.left + window.scrollX + (x * rect.width / CONFIG.canvas.width);
-                const screenY = rect.top + window.scrollY + (y * rect.height / CONFIG.canvas.height);
-                const indicatorSize = eraserSize * 4;
-                indicator.style.cssText = `position:absolute;left:${screenX - indicatorSize / 2}px;top:${screenY - indicatorSize / 2}px;width:${indicatorSize}px;height:${indicatorSize}px;border:2px dashed #fff;border-radius:50%;pointer-events:none;display:block`;
+                
+                // Mobile-optimized size calculation
+                const baseSize = CONFIG.isMobile ? eraserSize * 6 : eraserSize * 4;
+                const effectiveSize = CONFIG.isMobile ? baseSize * 1.2 : baseSize;
+                
+                // High-precision coordinate conversion
+                const scaleX = rect.width / CONFIG.canvas.width;
+                const scaleY = rect.height / CONFIG.canvas.height;
+                const screenX = rect.left + window.scrollX + (x * scaleX);
+                const screenY = rect.top + window.scrollY + (y * scaleY);
+                
+                // Mobile-enhanced indicator styling
+                const borderStyle = CONFIG.isMobile ? '3px solid #fff' : '2px dashed #fff';
+                const opacity = CONFIG.isMobile ? '0.8' : '1';
+                
+                indicator.style.cssText = `
+                    position: absolute;
+                    left: ${screenX - effectiveSize / 2}px;
+                    top: ${screenY - effectiveSize / 2}px;
+                    width: ${effectiveSize}px;
+                    height: ${effectiveSize}px;
+                    border: ${borderStyle};
+                    border-radius: 50%;
+                    pointer-events: none;
+                    display: block;
+                    opacity: ${opacity};
+                    z-index: 1000;
+                    box-shadow: ${CONFIG.isMobile ? '0 0 10px rgba(255,255,255,0.3)' : 'none'};
+                `;
             } else {
                 indicator.style.display = 'none';
             }
