@@ -39,6 +39,7 @@
   --accent-blue-dim: #3a70c2;
   
   /* Chart sizing variables */
+  --chart-size-mobile: min(90vw, 60vh, 600px);
   --sidebar-width: 320px;
   
   /* FIXED: Better keywords section height control */
