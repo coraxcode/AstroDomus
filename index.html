@@ -952,6 +952,9 @@ const AstrologyChart = (() => {
         }
 
         canvas.addEventListener('click', Events.handleClick);
+        canvas.addEventListener('touchend', e => {
+        if (!state.isDragging && e.changedTouches.length === 1) Events.handleClick(e);
+        });
         canvas.addEventListener('mouseleave', () => {
             const indicator = document.getElementById('eraserIndicator');
             if (indicator) indicator.style.display = 'none';
