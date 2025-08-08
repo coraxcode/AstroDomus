@@ -825,6 +825,13 @@ const AstrologyChart = (() => {
                 Renderer.drawChart();
             } else if (state.dragTarget === 'angle-control') {
                 state.ascendantOffset = Utils.getAngleFromPos(pos.x, pos.y);
+                
+                // Show ASC degrees only when dragging angle controls
+                if (state.dragAngleControl === 'asc') {
+                    const ascSignIndex = Utils.getSignFromAngle(state.ascendantOffset);
+                    const ascDegree = Math.floor(Utils.normalizeAngle(state.ascendantOffset - state.zodiacOffset) % 30);
+                    UI.updateInfo(`<strong>ASC:</strong> ${ASTRO_DATA.signNames[ascSignIndex]} ${ascDegree}°`);
+                }
                 Renderer.drawChart();
             } else {
                 state.dragTarget.angle = Utils.getAngleFromPos(pos.x, pos.y);
