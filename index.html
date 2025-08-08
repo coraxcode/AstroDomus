@@ -692,7 +692,7 @@ const AstrologyChart = (() => {
         },
         
         handleClick: e => {
-            if (state.mode === 'draw') return;
+            if (state.mode === 'draw' || state.isDragging) return;
             const pos = Utils.getMousePos(e);
             const planetData = HitDetection.getPlanetAt(pos.x, pos.y);
             const signIndex = HitDetection.getSignAt(pos.x, pos.y);
