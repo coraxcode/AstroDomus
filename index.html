@@ -72,6 +72,7 @@
                 <label><input type="checkbox" id="showChaldeanBounds"> Chaldean Bounds (0)</label>
                 <label><input type="checkbox" id="showDecans"> Decans (O)</label>
                 <label><input type="checkbox" id="showDirections"> House Directions (J)</label>
+                <label><input type="checkbox" id="freePlanetMovement"> Free Planet Movement (U)</label>
             </div>
             <div id="info">Select mode to interact with chart</div>
             <canvas id="chart" width="800" height="800"></canvas>
@@ -164,10 +165,13 @@ const AstrologyChart = (() => {
         degToRad: deg => deg * Math.PI / 180,
         radToDeg: rad => rad * 180 / Math.PI,
         normalizeAngle: angle => ((angle % 360) + 360) % 360,
-        getPlanetPos: (angle, planetSymbol) => {
+        getPlanetPos: (angle, planetSymbol, planet = null) => {
+            if (document.getElementById('freePlanetMovement')?.checked && planet?.freeX) {
+                return {x: planet.freeX, y: planet.freeY};
+            }
             const rad = Utils.degToRad(180 - angle);
             const circleKey = PTOLEMAIC_CIRCLES[planetSymbol];
-            const r = circleKey ? CONFIG.radii[circleKey] : CONFIG.radii.sun; // Default to Sun circle
+            const r = circleKey ? CONFIG.radii[circleKey] : CONFIG.radii.sun;
             return {x: CONFIG.center + Math.cos(rad) * r, y: CONFIG.center + Math.sin(rad) * r};
         },
         getAngleFromPos: (x, y) => Utils.normalizeAngle(180 - Utils.radToDeg(Math.atan2(y - CONFIG.center, x - CONFIG.center))),
@@ -196,7 +200,7 @@ const AstrologyChart = (() => {
         getPlanetAt: (x, y) => {
             if (state.hidePlanets) return null;
             for (let i = planets.length - 1; i >= 0; i--) {
-                const pos = Utils.getPlanetPos(planets[i].angle, planets[i].symbol);
+                const pos = Utils.getPlanetPos(planets[i].angle, planets[i].symbol, planets[i]);
                 if (Math.hypot(x - pos.x, y - pos.y) < 25) return {planet: planets[i], index: i};
             }
             return null;
@@ -634,7 +638,7 @@ const AstrologyChart = (() => {
             // Planets
             if (!state.hidePlanets) {
                 planets.forEach((planet, index) => {
-                    const pos = Utils.getPlanetPos(planet.angle, planet.symbol);
+                    const pos = Utils.getPlanetPos(planet.angle, planet.symbol, planet);
                     const isSelected = state.selectedPlanet === index;
                     const signIndex = Utils.getSignFromAngle(planet.angle);
                     const dignity = Utils.getDignity(planet.symbol, signIndex);
@@ -941,6 +945,12 @@ const AstrologyChart = (() => {
                 Renderer.drawChart();
             } else {
                 state.dragTarget.angle = Utils.getAngleFromPos(pos.x, pos.y);
+                if (document.getElementById('freePlanetMovement')?.checked) {
+                    state.dragTarget.freeX = pos.x;
+                    state.dragTarget.freeY = pos.y;
+                } else {
+                    state.dragTarget.angle = Utils.getAngleFromPos(pos.x, pos.y);
+                }
                 const signIndex = Utils.getSignFromAngle(state.dragTarget.angle);
                 const houseIndex = Utils.getHouseFromAngle(state.dragTarget.angle);
                 const degree = Math.floor(Utils.normalizeAngle(state.dragTarget.angle - state.zodiacOffset) % 30);
@@ -948,7 +958,7 @@ const AstrologyChart = (() => {
                 if (state.mode === 'zodiac') {
                     const dignity = Utils.getDignity(state.dragTarget.symbol, signIndex);
                     const color = Utils.getDignityColor(dignity);
-                    UI.updateInfo(`<strong>${state.dragTarget.name}</strong>: ${ASTRO_DATA.signNames[signIndex]} ${degree}° - <span style="color: ${color}">${dignity}</span>`);
+                    UI.updateInfo(`<strong>${state.dragTarget.name}</strong>: ${ASTRO_DATA.signNames[signIndex]} ${degree}° &nbsp; | &nbsp; <span style="color: ${color}">${dignity}</span>`);
                 } else if (state.mode === 'houses') {
                     UI.updateInfo(`<strong>${state.dragTarget.name}</strong>: ${ASTRO_DATA.houseNames[houseIndex]}`);
                 }
@@ -999,6 +1009,7 @@ const AstrologyChart = (() => {
                 'a': () => toggleCheckbox('showAngles'),
                 'h': () => toggleCheckbox('hideZodiac'),
                 'k': () => toggleCheckbox('hidePlanets'),
+                'u': () => toggleCheckbox('freePlanetMovement'),
                 'z': () => UI.setMode('zodiac'),
                 'x': () => UI.setMode('houses'),
                 'v': () => UI.setMode('planets'),
