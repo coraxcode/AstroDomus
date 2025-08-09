@@ -16,7 +16,7 @@
                 <button id="drawBtn" onclick="setMode('draw')">Draw (W)</button>
                 <button onclick="resetChart()">Reset (R)</button>
                 <select id="planetSelect" style="display:none;">
-                    <option value="">Add Planet...</option>
+                    <option value="">Add Symbols...</option>
                     <option value="☉">☉ Sun</option><option value="☽">☽ Moon</option><option value="☿">☿ Mercury</option>
                     <option value="♀">♀ Venus</option><option value="♂">♂ Mars</option><option value="♃">♃ Jupiter</option>
                     <option value="♄">♄ Saturn</option><option value="☊">☊ North Node</option><option value="☋">☋ South Node</option>
@@ -72,7 +72,7 @@
                 <label><input type="checkbox" id="showChaldeanBounds"> Chaldean Bounds (0)</label>
                 <label><input type="checkbox" id="showDecans"> Decans (O)</label>
                 <label><input type="checkbox" id="showDirections"> House Directions (J)</label>
-                <label><input type="checkbox" id="freePlanetMovement"> Free Planet Movement (U)</label>
+                <label><input type="checkbox" id="freeSymbolMovement"> Free Symbol Movement (U)</label>
             </div>
             <div id="info">Select mode to interact with chart</div>
             <canvas id="chart" width="800" height="800"></canvas>
@@ -166,7 +166,7 @@ const AstrologyChart = (() => {
         radToDeg: rad => rad * 180 / Math.PI,
         normalizeAngle: angle => ((angle % 360) + 360) % 360,
         getPlanetPos: (angle, planetSymbol, planet = null) => {
-            if (document.getElementById('freePlanetMovement')?.checked && planet?.freeX) {
+            if (document.getElementById('freeSymbolMovement')?.checked && planet?.freeX) {
                 return {x: planet.freeX, y: planet.freeY};
             }
             const rad = Utils.degToRad(180 - angle);
@@ -945,7 +945,7 @@ const AstrologyChart = (() => {
                 Renderer.drawChart();
             } else {
                 state.dragTarget.angle = Utils.getAngleFromPos(pos.x, pos.y);
-                if (document.getElementById('freePlanetMovement')?.checked) {
+                if (document.getElementById('freeSymbolMovement')?.checked) {
                     state.dragTarget.freeX = pos.x;
                     state.dragTarget.freeY = pos.y;
                 } else {
@@ -1009,7 +1009,7 @@ const AstrologyChart = (() => {
                 'a': () => toggleCheckbox('showAngles'),
                 'h': () => toggleCheckbox('hideZodiac'),
                 'k': () => toggleCheckbox('hidePlanets'),
-                'u': () => toggleCheckbox('freePlanetMovement'),
+                'u': () => toggleCheckbox('freeSymbolMovement'),
                 'z': () => UI.setMode('zodiac'),
                 'x': () => UI.setMode('houses'),
                 'v': () => UI.setMode('planets'),
