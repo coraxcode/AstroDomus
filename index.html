@@ -247,15 +247,18 @@ const AstrologyChart = (() => {
         },
         eraseAtPoint: (x, y, eraserSize) => {
             // Mobile optimization: Larger effective eraser size and more aggressive erasing
-            const effectiveSize = CONFIG.isMobile ? eraserSize * 1.5 : eraserSize;
+            const baseSize = CONFIG.isMobile ? Math.max(eraserSize * 8, 20) : Math.max(eraserSize * 4, 10);
+            const effectiveRadius = baseSize / 2;
+            const radiusSquared = effectiveRadius * effectiveRadius; 
             const pathsToRemove = [], newPathsToAdd = [];
             
             state.drawingPaths.forEach((path, pathIndex) => {
                 if (path[0]?.type === 'line') {
-                    // Enhanced line erasing with mobile tolerance
                     if (path.length >= 2) {
-                        const distance = DrawingSystem.getDistanceToLine(x, y, path[0].x, path[0].y, path[path.length - 1].x, path[path.length - 1].y);
-                        if (distance <= effectiveSize / 2) {
+                        const lineDistance = DrawingSystem.getDistanceToLine(x, y, path[0].x, path[0].y, path[path.length - 1].x, path[path.length - 1].y);
+                        // Consider line thickness for accurate erasing
+                        const lineThickness = path[0].size || 2;
+                        if (lineDistance <= effectiveRadius + lineThickness) {
                             pathsToRemove.push(pathIndex);
                         }
                     }
@@ -266,19 +269,21 @@ const AstrologyChart = (() => {
                     let erased = false;
                     
                     path.forEach(point => {
-                        const distance = Math.hypot(x - point.x, y - point.y);
-                        if (distance > effectiveSize / 2) {
+                        const distanceSquared = (x - point.x) * (x - point.x) + (y - point.y) * (y - point.y);
+                        const brushThickness = point.size || 2;
+                        const totalRadiusSquared = (effectiveRadius + brushThickness) * (effectiveRadius + brushThickness);
+                        if (distanceSquared > totalRadiusSquared) {
                             currentSegment.push(point);
                         } else {
                             erased = true;
-                            if (currentSegment.length > (CONFIG.isMobile ? 1 : 2)) {
+                            if (currentSegment.length > (CONFIG.isMobile ? 2 : 3)) {
                                 segments.push([...currentSegment]);
                             }
                             currentSegment = [];
                         }
                     });
                     
-                    if (currentSegment.length > (CONFIG.isMobile ? 1 : 2)) {
+                    if (currentSegment.length > (CONFIG.isMobile ? 2 : 3)) {
                         segments.push(currentSegment);
                     }
                     
@@ -322,8 +327,8 @@ const AstrologyChart = (() => {
                 const eraserSize = parseInt(document.getElementById('drawSize')?.value || 10);
                 
                 // Mobile-optimized size calculation
-                const baseSize = CONFIG.isMobile ? eraserSize * 6 : eraserSize * 4;
-                const effectiveSize = CONFIG.isMobile ? baseSize * 1.2 : baseSize;
+                const realEraserSize = CONFIG.isMobile ? Math.max(eraserSize * 8, 20) : Math.max(eraserSize * 4, 10);
+                const effectiveSize = realEraserSize;
                 
                 // High-precision coordinate conversion
                 const scaleX = rect.width / CONFIG.canvas.width;
