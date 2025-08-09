@@ -53,6 +53,13 @@
                 <label><input type="checkbox" id="showAngles"> Angles (ASC/DSC/MC/IC) (A)</label>
             </div>
             <div class="controls">
+                <label><input type="checkbox" id="showMoonCircle" checked> Moon Circle (☽)</label>
+                <label><input type="checkbox" id="showMercuryCircle" checked> Mercury Circle (☿)</label>
+                <label><input type="checkbox" id="showVenusCircle" checked> Venus Circle (♀)</label>
+                <label><input type="checkbox" id="showSunCircle" checked> Sun Circle (☉)</label>
+                <label><input type="checkbox" id="showMarsCircle" checked> Mars Circle (♂)</label>
+                <label><input type="checkbox" id="showJupiterCircle" checked> Jupiter Circle (♃)</label>
+                <label><input type="checkbox" id="showSaturnCircle" checked> Saturn Circle (♄)</label>
                 <label><input type="checkbox" id="showPlanetTemps"> Planet Temps (1)</label>
                 <label><input type="checkbox" id="showPlanetSect"> Planet Sect (2)</label>
                 <label><input type="checkbox" id="showBeneficMaleficPlanets"> Benefic planets / Malefic planets (3)</label>
@@ -82,12 +89,32 @@
 const AstrologyChart = (() => {
     // Core Configuration & State
     const CONFIG = {
-        canvas: document.getElementById('chart'),
+    canvas: document.getElementById('chart'),
         ctx: document.getElementById('chart').getContext('2d'),
         center: 400,
-        radii: {outer: 320, egyptian: 295, ptolemy: 270, chaldean: 245, decan: 220, inner: 195, aspect: 80},
+        radii: {
+            outer: 295,      // Outermost zodiac ring
+            egyptian: 270,   // Egyptian bounds (just inside outer)
+            ptolemy: 245,    // Ptolemy bounds (inside Egyptian)
+            chaldean: 220,   // Chaldean bounds (inside Ptolemy)  
+            decan: 205,      // Decan ring (inside all bounds)
+            inner: 180,      // Inner house ring
+            // Ptolemaic planetary circles (from outer to inner)
+            saturn: 160, jupiter: 140, mars: 120, sun: 100, venus: 80, mercury: 60, moon: 40,
+            aspect: 20       // Central aspect circle
+        },
         colors: {bg: '#0a0a0a', ring: '#333', text: '#fff', accent: '#FFD700', selected: '#FF6666', dim: '#666'},
         isMobile: /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768
+    };
+
+    const PTOLEMAIC_CIRCLES = {
+        '☽': 'moon',     // Moon - 1st circle
+        '☿': 'mercury',  // Mercury - 2nd circle  
+        '♀': 'venus',    // Venus - 3rd circle
+        '☉': 'sun',      // Sun - 4th circle
+        '♂': 'mars',     // Mars - 5th circle
+        '♃': 'jupiter',  // Jupiter - 6th circle
+        '♄': 'saturn'    // Saturn - 7th circle
     };
 
     let state = {
@@ -137,9 +164,10 @@ const AstrologyChart = (() => {
         degToRad: deg => deg * Math.PI / 180,
         radToDeg: rad => rad * 180 / Math.PI,
         normalizeAngle: angle => ((angle % 360) + 360) % 360,
-        getPlanetPos: angle => {
+        getPlanetPos: (angle, planetSymbol) => {
             const rad = Utils.degToRad(180 - angle);
-            const r = (CONFIG.radii.inner + CONFIG.radii.outer) / 2;
+            const circleKey = PTOLEMAIC_CIRCLES[planetSymbol];
+            const r = circleKey ? CONFIG.radii[circleKey] : CONFIG.radii.sun; // Default to Sun circle
             return {x: CONFIG.center + Math.cos(rad) * r, y: CONFIG.center + Math.sin(rad) * r};
         },
         getAngleFromPos: (x, y) => Utils.normalizeAngle(180 - Utils.radToDeg(Math.atan2(y - CONFIG.center, x - CONFIG.center))),
@@ -168,7 +196,7 @@ const AstrologyChart = (() => {
         getPlanetAt: (x, y) => {
             if (state.hidePlanets) return null;
             for (let i = planets.length - 1; i >= 0; i--) {
-                const pos = Utils.getPlanetPos(planets[i].angle);
+                const pos = Utils.getPlanetPos(planets[i].angle, planets[i].symbol);
                 if (Math.hypot(x - pos.x, y - pos.y) < 25) return {planet: planets[i], index: i};
             }
             return null;
@@ -385,6 +413,36 @@ const AstrologyChart = (() => {
             ctx.beginPath();
             ctx.arc(CONFIG.center, CONFIG.center, CONFIG.radii.aspect, 0, Math.PI * 2);
             ctx.stroke();
+
+            const planetaryCircles = [
+                {key: 'saturn', color: '#8B4513', show: 'showSaturnCircle', label: '♄'},
+                {key: 'jupiter', color: '#4169E1', show: 'showJupiterCircle', label: '♃'},
+                {key: 'mars', color: '#FF4500', show: 'showMarsCircle', label: '♂'},
+                {key: 'sun', color: '#FFD700', show: 'showSunCircle', label: '☉'},
+                {key: 'venus', color: '#32CD32', show: 'showVenusCircle', label: '♀'},
+                {key: 'mercury', color: '#FFA500', show: 'showMercuryCircle', label: '☿'},
+                {key: 'moon', color: '#C0C0C0', show: 'showMoonCircle', label: '☽'}
+            ];
+
+        planetaryCircles.forEach(circle => {
+            const checkbox = document.getElementById(circle.show);
+            if (checkbox && checkbox.checked) {
+                ctx.strokeStyle = circle.color;
+                ctx.lineWidth = 1;
+                ctx.setLineDash([2, 2]); // Dashed line for planetary circles
+                ctx.beginPath();
+                ctx.arc(CONFIG.center, CONFIG.center, CONFIG.radii[circle.key], 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.setLineDash([]); // Reset line dash
+                
+                // Optional: Add circle labels
+                ctx.fillStyle = circle.color;
+                ctx.font = CONFIG.isMobile ? '12px Arial' : '14px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(circle.label, CONFIG.center + CONFIG.radii[circle.key] + 15, CONFIG.center);
+            }
+        });
             
             // Bounds systems
             const checkElement = (id) => document.getElementById(id)?.checked;
@@ -576,7 +634,7 @@ const AstrologyChart = (() => {
             // Planets
             if (!state.hidePlanets) {
                 planets.forEach((planet, index) => {
-                    const pos = Utils.getPlanetPos(planet.angle);
+                    const pos = Utils.getPlanetPos(planet.angle, planet.symbol);
                     const isSelected = state.selectedPlanet === index;
                     const signIndex = Utils.getSignFromAngle(planet.angle);
                     const dignity = Utils.getDignity(planet.symbol, signIndex);
@@ -592,7 +650,7 @@ const AstrologyChart = (() => {
 
                     ctx.fillStyle = planet.color;
                     ctx.beginPath();
-                    ctx.arc(pos.x, pos.y, CONFIG.isMobile ? 15 : 18, 0, Math.PI * 2);
+                    ctx.arc(pos.x, pos.y, CONFIG.isMobile ? 20 : 20, 0, Math.PI * 2);
                     ctx.fill();
                     ctx.stroke();
                 }
@@ -1071,7 +1129,10 @@ const AstrologyChart = (() => {
             'showSolarIngress','showFertileBarren','showSignTemps','showSignGenders','showAngles',
             'showPlanetTemps','showPlanetSect','showBeneficMaleficPlanets','showPlanetGender',
             'showHouseSect','showHouseTypes','showhouseJoy','showEgyptianBounds','showPtolemyBounds',
-            'showChaldeanBounds','showDecans','showDirections','hideZodiac','hidePlanets'
+            'showChaldeanBounds','showDecans','showDirections','hideZodiac','hidePlanets',
+            // ADD these new checkbox IDs:
+            'showMoonCircle','showMercuryCircle','showVenusCircle','showSunCircle',
+            'showMarsCircle','showJupiterCircle','showSaturnCircle'
         ];
 
         checkboxIds.forEach(id => {
