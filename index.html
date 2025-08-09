@@ -950,9 +950,13 @@ const AstrologyChart = (() => {
                 }
                 Renderer.drawChart();
             } else {
-                if (document.getElementById('freeSymbolMovement')?.checked || FREE_SYMBOLS.includes(state.dragTarget.symbol)) {
+                const isFreeMovement = document.getElementById('freeSymbolMovement')?.checked || FREE_SYMBOLS.includes(state.dragTarget.symbol);
+                
+                if (isFreeMovement) {
                     state.dragTarget.freeX = pos.x;
                     state.dragTarget.freeY = pos.y;
+                    // 🔧 FIX: Always update angle so info shows correctly
+                    state.dragTarget.angle = Utils.getAngleFromPos(pos.x, pos.y);
                 } else {
                     state.dragTarget.angle = Utils.getAngleFromPos(pos.x, pos.y);
                 }
