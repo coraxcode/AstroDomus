@@ -22,6 +22,7 @@
                     <option value="♄">♄ Saturn</option><option value="☊">☊ North Node</option><option value="☋">☋ South Node</option>
                     <option value="⦻">⦻ Part of Fortune</option>
                     <option value="℞">℞ Retrograde</option>
+                    <option value="⭐">⭐ Star</option>
                 </select>
             </div>
             <div class="draw-controls" id="drawControls" style="display:none;">
@@ -118,6 +119,8 @@ const AstrologyChart = (() => {
         '♄': 'saturn'    // Saturn - 7th circle
     };
 
+    const FREE_SYMBOLS = ['℞', '⭐', '☊', '☋', '⦻']; // These symbols can be placed anywhere
+    
     let state = {
         mode: 'zodiac', isDragging: false, dragTarget: null, zodiacOffset: 0, lastZodiacAngle: 0,
         isDrawing: false, isErasing: false, drawingPaths: [], currentPath: [], lineStartPoint: null,
@@ -167,6 +170,9 @@ const AstrologyChart = (() => {
         normalizeAngle: angle => ((angle % 360) + 360) % 360,
         getPlanetPos: (angle, planetSymbol, planet = null) => {
             if (document.getElementById('freeSymbolMovement')?.checked && planet?.freeX) {
+                return {x: planet.freeX, y: planet.freeY};
+            }
+            if (FREE_SYMBOLS.includes(planetSymbol) && planet?.freeX) {
                 return {x: planet.freeX, y: planet.freeY};
             }
             const rad = Utils.degToRad(180 - angle);
@@ -944,8 +950,7 @@ const AstrologyChart = (() => {
                 }
                 Renderer.drawChart();
             } else {
-                state.dragTarget.angle = Utils.getAngleFromPos(pos.x, pos.y);
-                if (document.getElementById('freeSymbolMovement')?.checked) {
+                if (document.getElementById('freeSymbolMovement')?.checked || FREE_SYMBOLS.includes(state.dragTarget.symbol)) {
                     state.dragTarget.freeX = pos.x;
                     state.dragTarget.freeY = pos.y;
                 } else {
@@ -1093,10 +1098,10 @@ const AstrologyChart = (() => {
             planetSelect.addEventListener('change', e => {
                 if (!e.target.value) return;
                 const planetData = {
-                    symbols: {'☉':'Sun','☽':'Moon','☿':'Mercury','♀':'Venus','♂':'Mars','♃':'Jupiter','♄':'Saturn','☊':'North Node','☋':'South Node','⦻':'Part of Fortune', '℞':'Retrograde'},
-                    colors: {'☉':'#FFD700','☽':'#C0C0C0','☿':'#FFA500','♀':'#32CD32','♂':'#FF4500','♃':'#4169E1','♄':'#8B4513','☊':'#FFE4B5','☋':'#DDA0DD','⦻':'#20B2AA', '℞':'#20B2AA'},
-                    textColors: {'☉':'#000','☽':'#000','☿':'#000','♀':'#000','♂':'#000','♃':'#000','♄':'#000','☊':'#000','☋':'#000','⦻':'#000', '℞':'#FF0000'},
-                    showCircle: {'☉':true,'☽':true,'☿':true,'♀':true,'♂':true,'♃':true,'♄':true,'☊':true,'☋':true,'⦻':true, '℞':false}
+                    symbols: {'☉':'Sun','☽':'Moon','☿':'Mercury','♀':'Venus','♂':'Mars','♃':'Jupiter','♄':'Saturn','☊':'North Node','☋':'South Node','⦻':'Part of Fortune', '℞':'Retrograde', '⭐':'Star'},
+                    colors: {'☉':'#FFD700','☽':'#C0C0C0','☿':'#FFA500','♀':'#32CD32','♂':'#FF4500','♃':'#4169E1','♄':'#8B4513','☊':'#FFE4B5','☋':'#DDA0DD','⦻':'#20B2AA', '℞':'#20B2AA', '⭐':'#20B2AA'},
+                    textColors: {'☉':'#000','☽':'#000','☿':'#000','♀':'#000','♂':'#000','♃':'#000','♄':'#000','☊':'#000','☋':'#000','⦻':'#000', '℞':'#FF0000', '⭐':'#FF0000'},
+                    showCircle: {'☉':true,'☽':true,'☿':true,'♀':true,'♂':true,'♃':true,'♄':true,'☊':true,'☋':true,'⦻':true, '℞':false, '⭐':false}
                 };
                 planets.push({
                     symbol: e.target.value,
