@@ -864,7 +864,7 @@ const AstrologyChart = (() => {
             
             const planetData = HitDetection.getPlanetAt(pos.x, pos.y);
             if (planetData) {
-                const planetPos = Utils.getPlanetPos(planetData.planet.angle);
+                const planetPos = Utils.getPlanetPos(planetData.planet.angle, planetData.planet.symbol, planetData.planet);
                 if (state.mode === 'planets' && pos.x > planetPos.x + 8 && pos.y < planetPos.y - 8) {
                     planets.splice(planetData.index, 1);
                     if (state.selectedPlanet === planetData.index) state.selectedPlanet = null;
