@@ -74,6 +74,7 @@
                 <label><input type="checkbox" id="showDecans"> Decans (O)</label>
                 <label><input type="checkbox" id="showDirections"> House Directions (J)</label>
                 <label><input type="checkbox" id="freeSymbolMovement"> Free Symbol Movement (U)</label>
+                <label><input type="checkbox" id="showPlanetCircles" checked> Show Planet Circles</label>
             </div>
             <div id="info">Select mode to interact with chart</div>
             <canvas id="chart" width="800" height="800"></canvas>
@@ -653,8 +654,9 @@ const AstrologyChart = (() => {
                     const isSelected = state.selectedPlanet === index;
                     const signIndex = Utils.getSignFromAngle(planet.angle);
                     const dignity = Utils.getDignity(planet.symbol, signIndex);
+                    const showCircles = document.getElementById('showPlanetCircles')?.checked !== false;
                     
-                    if (planet.showCircle !== false) {
+                    if (planet.showCircle !== false && showCircles) {
                     if (checkElement('showDignities')) {
                         ctx.strokeStyle = Utils.getDignityColor(dignity);
                         ctx.lineWidth = 4;
@@ -668,8 +670,8 @@ const AstrologyChart = (() => {
                     ctx.arc(pos.x, pos.y, CONFIG.isMobile ? 20 : 20, 0, Math.PI * 2);
                     ctx.fill();
                     ctx.stroke();
-                }
-                    ctx.fillStyle = planet.textColor || '#000';
+                                }
+                    ctx.fillStyle = showCircles ? (planet.textColor || '#000') : planet.color;
                     ctx.font = CONFIG.isMobile ? '18px Arial' : 'bold 24px Arial';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
@@ -1157,7 +1159,7 @@ const AstrologyChart = (() => {
             'showChaldeanBounds','showDecans','showDirections','hideZodiac','hidePlanets',
             // ADD these new checkbox IDs:
             'showMoonCircle','showMercuryCircle','showVenusCircle','showSunCircle',
-            'showMarsCircle','showJupiterCircle','showSaturnCircle'
+            'showMarsCircle','showJupiterCircle','showSaturnCircle', 'showPlanetCircles'
         ];
 
         checkboxIds.forEach(id => {
