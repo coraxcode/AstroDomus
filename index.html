@@ -1038,7 +1038,15 @@ const AstrologyChart = (() => {
                 'p': () => { if (state.mode === 'draw') setDrawTool('pencil'); },
                 'l': () => { if (state.mode === 'draw') setDrawTool('line'); },
                 'e': () => { if (state.mode === 'draw') setDrawTool('eraser'); },
-                'c': () => { if (state.mode === 'draw') UI.clearDrawing(); }
+                'c': () => { if (state.mode === 'draw') UI.clearDrawing(); },
+                '-': () => { 
+                        if (state.mode === 'planets' && state.selectedPlanet !== null) { 
+                            planets.splice(state.selectedPlanet, 1); 
+                            state.selectedPlanet = null; 
+                            Renderer.drawChart(); 
+                            UI.updateInfo('Planet deleted'); 
+                        } 
+                    }
             };
 
             if (keyMap[e.key.toLowerCase()]) {
