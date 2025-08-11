@@ -231,7 +231,7 @@ const AstrologyChart = (() => {
             if (!document.getElementById('showAngles')?.checked) return null;
             const controls = Renderer.getAngleControlPoints();
             for (const [name, pos] of Object.entries(controls)) {
-                if (Math.hypot(x - pos.x, y - pos.y) < 12) return name;
+                if (Math.hypot(x - pos.x, y - pos.y) < 20) return name;
             }
             return null;
         }
@@ -366,7 +366,7 @@ const AstrologyChart = (() => {
         getAngleControlPoints: () => {
             const ascAngle = Utils.degToRad(180 - state.ascendantOffset);
             const mcAngle = Utils.degToRad(180 - state.ascendantOffset - 270);
-            const controlRadius = CONFIG.radii.outer + 15;
+            const controlRadius = CONFIG.radii.outer + 35;
             return {
                 asc: {x: CONFIG.center + Math.cos(ascAngle) * controlRadius, y: CONFIG.center + Math.sin(ascAngle) * controlRadius},
                 dsc: {x: CONFIG.center - Math.cos(ascAngle) * controlRadius, y: CONFIG.center - Math.sin(ascAngle) * controlRadius},
