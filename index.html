@@ -535,7 +535,12 @@ const AstrologyChart = (() => {
                 ctx.fillText(`ASC - ${ASTRO_DATA.signNames[asc.signIndex]} ${asc.degree}°`, controls.asc.x, controls.asc.y + labelOffset);
                 ctx.fillText(`DSC - ${ASTRO_DATA.signNames[dsc.signIndex]} ${dsc.degree}°`, controls.dsc.x, controls.dsc.y + labelOffset);
                 ctx.fillText(`MC - ${ASTRO_DATA.signNames[mc.signIndex]} ${mc.degree}°`, controls.mc.x, controls.mc.y - labelOffset);
-                ctx.fillText(`IC - ${ASTRO_DATA.signNames[ic.signIndex]} ${ic.degree}°`, controls.ic.x, controls.ic.y - labelOffset);
+                ctx.fillText(`IC - ${ASTRO_DATA.signNames[ic.signIndex]} ${ic.degree}°`, controls.ic.x, controls.ic.y + labelOffset);
+
+                ctx.fillText(`East`, controls.asc.x, controls.asc.y + labelOffset + 15);
+                ctx.fillText(`West`, controls.dsc.x, controls.dsc.y + labelOffset + 15);
+                ctx.fillText(`South`, controls.mc.x, controls.mc.y - labelOffset - 15);
+                ctx.fillText(`North`, controls.ic.x, controls.ic.y + labelOffset + 15);
             }
             
             // Zodiac signs
