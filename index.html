@@ -88,48 +88,55 @@
         </div>
     </div>
 <script>
-// Professional Astrology Chart Engine - Optimized (v5.0)
 const AstrologyChart = (() => {
-    // Core Configuration & State
+    'use strict';
+
+    // === CORE CONFIGURATION ===
     const CONFIG = {
-    canvas: document.getElementById('chart'),
+        canvas: document.getElementById('chart'),
         ctx: document.getElementById('chart').getContext('2d'),
         center: 400,
         radii: {
-            outer: 295,      // Outermost zodiac ring
-            egyptian: 270,   // Egyptian bounds (just inside outer)
-            ptolemy: 245,    // Ptolemy bounds (inside Egyptian)
-            chaldean: 220,   // Chaldean bounds (inside Ptolemy)  
-            decan: 205,      // Decan ring (inside all bounds)
-            inner: 180,      // Inner house ring
-            // Ptolemaic planetary circles (from outer to inner)
+            outer: 295, egyptian: 270, ptolemy: 245, chaldean: 220, decan: 205, inner: 180,
             saturn: 160, jupiter: 140, mars: 120, sun: 100, venus: 80, mercury: 60, moon: 40,
-            aspect: 20       // Central aspect circle
+            aspect: 20
         },
-        colors: {bg: '#0a0a0a', ring: '#333', text: '#fff', accent: '#FFD700', selected: '#FF6666', dim: '#666'},
+        colors: {
+            bg: '#0a0a0a', ring: '#333', text: '#fff', accent: '#FFD700', 
+            selected: '#FF6666', dim: '#666'
+        },
         isMobile: /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768
     };
 
+    // === PLANETARY SYSTEM MAPPING ===
     const PTOLEMAIC_CIRCLES = {
-        '☽': 'moon',     // Moon - 1st circle
-        '☿': 'mercury',  // Mercury - 2nd circle  
-        '♀': 'venus',    // Venus - 3rd circle
-        '☉': 'sun',      // Sun - 4th circle
-        '♂': 'mars',     // Mars - 5th circle
-        '♃': 'jupiter',  // Jupiter - 6th circle
-        '♄': 'saturn'    // Saturn - 7th circle
+        '☽': 'moon', '☿': 'mercury', '♀': 'venus', '☉': 'sun',
+        '♂': 'mars', '♃': 'jupiter', '♄': 'saturn'
     };
 
-    const FREE_SYMBOLS = ['℞', '⭐', '☊', '☋', '⦻']; // These symbols can be placed anywhere
-    
+    const FREE_SYMBOLS = ['℞', '⭐', '☊', '☋', '⦻']; // Symbols with free movement
+
+    // === APPLICATION STATE ===
     let state = {
-        mode: 'zodiac', isDragging: false, dragTarget: null, zodiacOffset: 0, lastZodiacAngle: 0,
-        isDrawing: false, isErasing: false, drawingPaths: [], currentPath: [], lineStartPoint: null,
-        selectedSign: null, selectedPlanet: null, ascendantOffset: 0, dragAngleControl: null,
-        hideZodiac: false, hidePlanets: false
+        mode: 'zodiac',
+        isDragging: false,
+        dragTarget: null,
+        zodiacOffset: 0,
+        lastZodiacAngle: 0,
+        isDrawing: false,
+        isErasing: false,
+        drawingPaths: [],
+        currentPath: [],
+        lineStartPoint: null,
+        selectedSign: null,
+        selectedPlanet: null,
+        ascendantOffset: 0,
+        dragAngleControl: null,
+        hideZodiac: false,
+        hidePlanets: false
     };
 
-    // Compressed Astrology Data Repository
+    // === ASTROLOGICAL DATA REPOSITORY ===
     const ASTRO_DATA = {
         signs: ['♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓'],
         signNames: ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'],
@@ -160,30 +167,99 @@ const AstrologyChart = (() => {
         chaldeanBounds: [[['♂',6],['☉',12],['♀',20],['☿',25],['♄',30]],[['♀',8],['☿',15],['☽',22],['♄',26],['♂',30]],[['☿',6],['♃',13],['♀',17],['♄',24],['♂',30]],[['♂',6],['♀',12],['☽',18],['♃',24],['♄',30]],[['♄',6],['☿',13],['♀',19],['♃',25],['♂',30]],[['☿',6],['♀',12],['♃',18],['♄',24],['♂',30]],[['♄',6],['♀',11],['♃',16],['☿',24],['♂',30]],[['♂',6],['♀',14],['☿',21],['♃',27],['♄',30]],[['♃',8],['♀',13],['☿',18],['♄',26],['♂',30]],[['♀',6],['☿',11],['♃',16],['♂',23],['♄',30]],[['☿',6],['♀',12],['♃',20],['♂',24],['♄',30]],[['♀',8],['♃',13],['☿',17],['♂',23],['♄',30]]]
     };
 
-    let planets = [{symbol:'☉',name:'Sun',angle:120,color:'#FFD700'},{symbol:'☽',name:'Moon',angle:90,color:'#C0C0C0'},{symbol:'♂',name:'Mars',angle:0,color:'#FF4500'},{symbol:'♀',name:'Venus',angle:30,color:'#32CD32'},{symbol:'☿',name:'Mercury',angle:60,color:'#FFA500'},{symbol:'♃',name:'Jupiter',angle:240,color:'#4169E1'},{symbol:'♄',name:'Saturn',angle:270,color:'#8B4513'}];
+    // === DEFAULT PLANET CONFIGURATION ===
+    let planets = [
+        {symbol:'☉', name:'Sun', angle:120, color:'#FFD700'},
+        {symbol:'☽', name:'Moon', angle:90, color:'#C0C0C0'},
+        {symbol:'♂', name:'Mars', angle:0, color:'#FF4500'},
+        {symbol:'♀', name:'Venus', angle:30, color:'#32CD32'},
+        {symbol:'☿', name:'Mercury', angle:60, color:'#FFA500'},
+        {symbol:'♃', name:'Jupiter', angle:240, color:'#4169E1'},
+        {symbol:'♄', name:'Saturn', angle:270, color:'#8B4513'}
+    ];
 
-    const keywords = {signs:{'Aries':['Cardinal Fire','Hot & Dry','Choleric','Masculine','Diurnal','Spring Equinox','Ram','Head & Face','Initiative','Commanding','Mars Domicile','Sun Exaltation','Eastern','Moveable','Bestial'],'Taurus':['Fixed Earth','Cold & Dry','Melancholic','Feminine','Nocturnal','Spring','Bull','Neck & Throat','Stability','Possessions','Venus Domicile','Moon Exaltation','Southern','Solid','Four-footed'],'Gemini':['Mutable Air','Hot & Moist','Sanguine','Masculine','Diurnal','Late Spring','Twins','Arms & Hands','Communication','Versatility','Mercury Domicile','North Node Exalt','Western','Bicorporeal','Human'],'Cancer':['Cardinal Water','Cold & Moist','Phlegmatic','Feminine','Nocturnal','Summer Solstice','Crab','Breast & Stomach','Home','Mother','Moon Domicile','Jupiter Traditional','Northern','Tropical','Mute'],'Leo':['Fixed Fire','Hot & Dry','Choleric','Masculine','Diurnal','Midsummer','Lion','Heart & Back','Royalty','Authority','Sun Domicile','No Exaltation','Eastern','Commanding','Bestial'],'Virgo':['Mutable Earth','Cold & Dry','Melancholic','Feminine','Nocturnal','Late Summer','Virgin','Belly & Intestines','Service','Analysis','Mercury Domicile','Mercury Exaltation','Southern','Barren','Human'],'Libra':['Cardinal Air','Hot & Moist','Sanguine','Masculine','Diurnal','Autumn Equinox','Scales','Kidneys & Lumbar','Balance','Justice','Venus Domicile','Saturn Exaltation','Western','Moveable','Human'],'Scorpio':['Fixed Water','Cold & Moist','Phlegmatic','Feminine','Nocturnal','Autumn','Scorpion','Genitals','Death','Transformation','Mars Domicile','South Node Exalt','Northern','Fruitful','Reptile'],'Sagittarius':['Mutable Fire','Hot & Dry','Choleric','Masculine','Diurnal','Late Autumn','Centaur','Thighs & Hips','Philosophy','Religion','Jupiter Domicile','No Exaltation','Eastern','Bicorporeal','Four-footed'],'Capricorn':['Cardinal Earth','Cold & Dry','Melancholic','Feminine','Nocturnal','Winter Solstice','Goat','Knees','Authority','Structure','Saturn Domicile','Mars Exaltation','Southern','Tropical','Four-footed'],'Aquarius':['Fixed Air','Hot & Moist','Sanguine','Masculine','Diurnal','Midwinter','Water-bearer','Calves & Ankles','Friendship','Groups','Saturn Domicile','No Exaltation','Western','Human','Rational'],'Pisces':['Mutable Water','Cold & Moist','Phlegmatic','Feminine','Nocturnal','Late Winter','Fishes','Feet','Compassion','Sacrifice','Jupiter Domicile','Venus Exaltation','Northern','Bicorporeal','Mute']},planets:{'Sun':['Greater Luminary','Hot & Dry','Choleric','Masculine','Gold','Leo Ruler','Aries Exalted','Father','King','Authority','Vitality','Honor','Government','Right Eye','Spirit'],'Moon':['Lesser Luminary','Cold & Moist','Phlegmatic','Feminine','Silver','Cancer Ruler','Taurus Exalted','Mother','Queen','Body','Fluctuation','Memory','Common People','Left Eye','Soul'],'Mercury':['Neutral Planet','Convertible','Convertible','Neutral','Quicksilver','Gemini/Virgo Ruler','Virgo Exalted','Messenger','Youth','Learning','Speech','Commerce','Writing','Siblings','Swift'],'Venus':['Lesser Benefic','Cold & Moist','Phlegmatic','Feminine','Copper','Taurus/Libra Ruler','Pisces Exalted','Love','Beauty','Pleasure','Women','Art','Music','Marriage','Harmony'],'Mars':['Lesser Malefic','Hot & Dry','Choleric','Masculine','Iron','Aries/Scorpio Ruler','Capricorn Exalted','War','Strife','Courage','Surgery','Iron','Soldiers','Cutting','Violence'],'Jupiter':['Greater Benefic','Hot & Moist','Sanguine','Masculine','Tin','Sagittarius/Pisces Ruler','Cancer Traditional','Wisdom','Religion','Fortune','Expansion','Law','Philosophy','Priests','Judges'],'Saturn':['Greater Malefic','Cold & Dry','Melancholic','Masculine','Lead','Capricorn/Aquarius Ruler','Libra Exalted','Time','Limitation','Discipline','Old Age','Hardship','Agriculture','Patience','Wisdom']},houses:{'1st':['Angular House','House of Life','Ascendant','Self','Body','Appearance','Vitality','Character','Native','Health','Temperament','Life Force','Beginning of Life','Personal Manner','Constitution'],'2nd':['Succedent House','Gate of Hades','Possessions','Moveable Goods','Money','Substance','Profit','Gain','Resources','Food','Clothing','Personal Property','Wealth','Material Security','Earnings'],'3rd':['Cadent House','House of Goddess','Siblings','Brethren','Short Journeys','Letters','Messages','Moon Joy','Neighbors','Reports','Communications','Local Travel','Religious Worship','Small Travels','Announcements'],'4th':['Angular House','Angle of Earth','Father','Parents','Ancestry','Land','Real Estate','End of Life','Grave','Hidden Treasure','Foundations','Inheritance from Father','Old Age','Private Affairs','Homeland'],'5th':['Succedent House','House of Good Fortune','Children','Offspring','Pregnancy','Venus Joy','Pleasure','Entertainment','Good Fortune','Gifts','Legacies','Recreation','Creative Works','Procreation','Joy'],'6th':['Cadent House','House of Bad Fortune','Illness','Sickness','Servants','Slaves','Small Animals','Mars Joy','Enemies','Work','Service','Bad Fortune','Injury','Laborers','Misfortune'],'7th':['Angular House','Angle of West','Marriage','Spouse','Partnerships','Open Enemies','Others','Legal Opponents','Contracts','War','Lawsuits','Public Relations','Competitors','Thieves','Fugitives'],'8th':['Succedent House','House of Death','Death','Wills','Legacies','Others Money','Saturn Joy','Inheritance','Debt','Taxes','Partners Resources','Fear','Anxiety','Transformation','Occult Sciences'],'9th':['Cadent House','House of God','Religion','Philosophy','Long Journeys','Foreign Lands','Sun Joy','Dreams','Visions','Higher Learning','Prophecy','Wisdom','Spiritual Matters','Foreign Affairs','Publishing'],'10th':['Angular House','House of Honor','Midheaven','Mother','Career','Reputation','Honor','Authority','Government','Fame','Public Standing','Achievement','Kingdom','Dignity','Social Position'],'11th':['Succedent House','House of Good Spirit','Friends','Hope','Good Fortune','Jupiter Joy','Benefactors','Allies','Good Daemon','Counselors','Trust','Praise','Acquisition','Assistants','Social Groups'],'12th':['Cadent House','House of Bad Spirit','Hidden Enemies','Secret Foes','Large Animals','Imprisonment','Exile','Sorrow','Self-Undoing','Bad Spirit','Affliction','Witchcraft','Secret Sorrows','Private Enemies','Confinement']}};
+    // === KEYWORDS DATABASE FOR TEACHING ===
+    const keywords = {
+        signs: {
+            'Aries': ['Cardinal Fire','Hot & Dry','Choleric','Masculine','Diurnal','Spring Equinox','Ram','Head & Face','Initiative','Commanding','Mars Domicile','Sun Exaltation','Eastern','Moveable','Bestial'],
+            'Taurus': ['Fixed Earth','Cold & Dry','Melancholic','Feminine','Nocturnal','Spring','Bull','Neck & Throat','Stability','Possessions','Venus Domicile','Moon Exaltation','Southern','Solid','Four-footed'],
+            'Gemini': ['Mutable Air','Hot & Moist','Sanguine','Masculine','Diurnal','Late Spring','Twins','Arms & Hands','Communication','Versatility','Mercury Domicile','North Node Exalt','Western','Bicorporeal','Human'],
+            'Cancer': ['Cardinal Water','Cold & Moist','Phlegmatic','Feminine','Nocturnal','Summer Solstice','Crab','Breast & Stomach','Home','Mother','Moon Domicile','Jupiter Traditional','Northern','Tropical','Mute'],
+            'Leo': ['Fixed Fire','Hot & Dry','Choleric','Masculine','Diurnal','Midsummer','Lion','Heart & Back','Royalty','Authority','Sun Domicile','No Exaltation','Eastern','Commanding','Bestial'],
+            'Virgo': ['Mutable Earth','Cold & Dry','Melancholic','Feminine','Nocturnal','Late Summer','Virgin','Belly & Intestines','Service','Analysis','Mercury Domicile','Mercury Exaltation','Southern','Barren','Human'],
+            'Libra': ['Cardinal Air','Hot & Moist','Sanguine','Masculine','Diurnal','Autumn Equinox','Scales','Kidneys & Lumbar','Balance','Justice','Venus Domicile','Saturn Exaltation','Western','Moveable','Human'],
+            'Scorpio': ['Fixed Water','Cold & Moist','Phlegmatic','Feminine','Nocturnal','Autumn','Scorpion','Genitals','Death','Transformation','Mars Domicile','South Node Exalt','Northern','Fruitful','Reptile'],
+            'Sagittarius': ['Mutable Fire','Hot & Dry','Choleric','Masculine','Diurnal','Late Autumn','Centaur','Thighs & Hips','Philosophy','Religion','Jupiter Domicile','No Exaltation','Eastern','Bicorporeal','Four-footed'],
+            'Capricorn': ['Cardinal Earth','Cold & Dry','Melancholic','Feminine','Nocturnal','Winter Solstice','Goat','Knees','Authority','Structure','Saturn Domicile','Mars Exaltation','Southern','Tropical','Four-footed'],
+            'Aquarius': ['Fixed Air','Hot & Moist','Sanguine','Masculine','Diurnal','Midwinter','Water-bearer','Calves & Ankles','Friendship','Groups','Saturn Domicile','No Exaltation','Western','Human','Rational'],
+            'Pisces': ['Mutable Water','Cold & Moist','Phlegmatic','Feminine','Nocturnal','Late Winter','Fishes','Feet','Compassion','Sacrifice','Jupiter Domicile','Venus Exaltation','Northern','Bicorporeal','Mute']
+        },
+        planets: {
+            'Sun': ['Greater Luminary','Hot & Dry','Choleric','Masculine','Gold','Leo Ruler','Aries Exalted','Father','King','Authority','Vitality','Honor','Government','Right Eye','Spirit'],
+            'Moon': ['Lesser Luminary','Cold & Moist','Phlegmatic','Feminine','Silver','Cancer Ruler','Taurus Exalted','Mother','Queen','Body','Fluctuation','Memory','Common People','Left Eye','Soul'],
+            'Mercury': ['Neutral Planet','Convertible','Convertible','Neutral','Quicksilver','Gemini/Virgo Ruler','Virgo Exalted','Messenger','Youth','Learning','Speech','Commerce','Writing','Siblings','Swift'],
+            'Venus': ['Lesser Benefic','Cold & Moist','Phlegmatic','Feminine','Copper','Taurus/Libra Ruler','Pisces Exalted','Love','Beauty','Pleasure','Women','Art','Music','Marriage','Harmony'],
+            'Mars': ['Lesser Malefic','Hot & Dry','Choleric','Masculine','Iron','Aries/Scorpio Ruler','Capricorn Exalted','War','Strife','Courage','Surgery','Iron','Soldiers','Cutting','Violence'],
+            'Jupiter': ['Greater Benefic','Hot & Moist','Sanguine','Masculine','Tin','Sagittarius/Pisces Ruler','Cancer Traditional','Wisdom','Religion','Fortune','Expansion','Law','Philosophy','Priests','Judges'],
+            'Saturn': ['Greater Malefic','Cold & Dry','Melancholic','Masculine','Lead','Capricorn/Aquarius Ruler','Libra Exalted','Time','Limitation','Discipline','Old Age','Hardship','Agriculture','Patience','Wisdom']
+        },
+        houses: {
+            '1st': ['Angular House','House of Life','Ascendant','Self','Body','Appearance','Vitality','Character','Native','Health','Temperament','Life Force','Beginning of Life','Personal Manner','Constitution'],
+            '2nd': ['Succedent House','Gate of Hades','Possessions','Moveable Goods','Money','Substance','Profit','Gain','Resources','Food','Clothing','Personal Property','Wealth','Material Security','Earnings'],
+            '3rd': ['Cadent House','House of Goddess','Siblings','Brethren','Short Journeys','Letters','Messages','Moon Joy','Neighbors','Reports','Communications','Local Travel','Religious Worship','Small Travels','Announcements'],
+            '4th': ['Angular House','Angle of Earth','Father','Parents','Ancestry','Land','Real Estate','End of Life','Grave','Hidden Treasure','Foundations','Inheritance from Father','Old Age','Private Affairs','Homeland'],
+            '5th': ['Succedent House','House of Good Fortune','Children','Offspring','Pregnancy','Venus Joy','Pleasure','Entertainment','Good Fortune','Gifts','Legacies','Recreation','Creative Works','Procreation','Joy'],
+            '6th': ['Cadent House','House of Bad Fortune','Illness','Sickness','Servants','Slaves','Small Animals','Mars Joy','Enemies','Work','Service','Bad Fortune','Injury','Laborers','Misfortune'],
+            '7th': ['Angular House','Angle of West','Marriage','Spouse','Partnerships','Open Enemies','Others','Legal Opponents','Contracts','War','Lawsuits','Public Relations','Competitors','Thieves','Fugitives'],
+            '8th': ['Succedent House','House of Death','Death','Wills','Legacies','Others Money','Saturn Joy','Inheritance','Debt','Taxes','Partners Resources','Fear','Anxiety','Transformation','Occult Sciences'],
+            '9th': ['Cadent House','House of God','Religion','Philosophy','Long Journeys','Foreign Lands','Sun Joy','Dreams','Visions','Higher Learning','Prophecy','Wisdom','Spiritual Matters','Foreign Affairs','Publishing'],
+            '10th': ['Angular House','House of Honor','Midheaven','Mother','Career','Reputation','Honor','Authority','Government','Fame','Public Standing','Achievement','Kingdom','Dignity','Social Position'],
+            '11th': ['Succedent House','House of Good Spirit','Friends','Hope','Good Fortune','Jupiter Joy','Benefactors','Allies','Good Daemon','Counselors','Trust','Praise','Acquisition','Assistants','Social Groups'],
+            '12th': ['Cadent House','House of Bad Spirit','Hidden Enemies','Secret Foes','Large Animals','Imprisonment','Exile','Sorrow','Self-Undoing','Bad Spirit','Affliction','Witchcraft','Secret Sorrows','Private Enemies','Confinement']
+        }
+    };
 
-    // Performance-Optimized Math Utilities
+    // === MATHEMATICAL UTILITIES ===
     const Utils = {
+        // Convert degrees to radians
         degToRad: deg => deg * Math.PI / 180,
+        
+        // Convert radians to degrees
         radToDeg: rad => rad * 180 / Math.PI,
+        
+        // Normalize angle to 0-360 range
         normalizeAngle: angle => ((angle % 360) + 360) % 360,
+        
+        // Get planet position based on angle and type
         getPlanetPos: (angle, planetSymbol, planet = null) => {
+            // Check for free movement mode
             if (document.getElementById('freeSymbolMovement')?.checked && planet?.freeX) {
                 return {x: planet.freeX, y: planet.freeY};
             }
             if (FREE_SYMBOLS.includes(planetSymbol) && planet?.freeX) {
                 return {x: planet.freeX, y: planet.freeY};
             }
+            
+            // Calculate position on Ptolemaic circles
             const rad = Utils.degToRad(180 - angle);
             const circleKey = PTOLEMAIC_CIRCLES[planetSymbol];
             const r = circleKey ? CONFIG.radii[circleKey] : CONFIG.radii.sun;
-            return {x: CONFIG.center + Math.cos(rad) * r, y: CONFIG.center + Math.sin(rad) * r};
+            return {
+                x: CONFIG.center + Math.cos(rad) * r,
+                y: CONFIG.center + Math.sin(rad) * r
+            };
         },
+        
+        // Get angle from x,y coordinates
         getAngleFromPos: (x, y) => Utils.normalizeAngle(180 - Utils.radToDeg(Math.atan2(y - CONFIG.center, x - CONFIG.center))),
+        
+        // Get zodiac sign index from angle
         getSignFromAngle: angle => Math.floor(Utils.normalizeAngle(angle - state.zodiacOffset) / 30),
+        
+        // Get house index from angle
         getHouseFromAngle: angle => Math.floor(Utils.normalizeAngle(angle) / 30),
+        
+        // Calculate planetary dignity
         getDignity: (planetSymbol, signIndex) => {
             if (ASTRO_DATA.rulers[signIndex] === planetSymbol) return 'Domicile';
             if (ASTRO_DATA.exaltations[signIndex] === planetSymbol) return 'Exaltation';
@@ -191,7 +267,17 @@ const AstrologyChart = (() => {
             if (ASTRO_DATA.falls[signIndex] === planetSymbol) return 'Fall';
             return 'Peregrine';
         },
-        getDignityColor: dignity => ({Domicile:'#00FF00',Exaltation:'#FFD700',Detriment:'#FF6666',Fall:'#FF4444',Peregrine:'#CCCCCC'})[dignity],
+        
+        // Get dignity color coding
+        getDignityColor: dignity => ({
+            'Domicile': '#00FF00',
+            'Exaltation': '#FFD700',
+            'Detriment': '#FF6666',
+            'Fall': '#FF4444',
+            'Peregrine': '#CCCCCC'
+        })[dignity],
+        
+        // Get mouse/touch position relative to canvas
         getMousePos: e => {
             const rect = CONFIG.canvas.getBoundingClientRect();
             const touch = e.touches?.[0] || e.changedTouches?.[0] || e;
@@ -202,31 +288,42 @@ const AstrologyChart = (() => {
         }
     };
 
-    // Optimized Hit Detection System
+    // === HIT DETECTION SYSTEM ===
     const HitDetection = {
+        // Find planet at given coordinates
         getPlanetAt: (x, y) => {
             if (state.hidePlanets) return null;
             for (let i = planets.length - 1; i >= 0; i--) {
                 const pos = Utils.getPlanetPos(planets[i].angle, planets[i].symbol, planets[i]);
-                if (Math.hypot(x - pos.x, y - pos.y) < 25) return {planet: planets[i], index: i};
+                if (Math.hypot(x - pos.x, y - pos.y) < 25) {
+                    return {planet: planets[i], index: i};
+                }
             }
             return null;
         },
+        
+        // Find zodiac sign at given coordinates
         getSignAt: (x, y) => {
             if (state.hideZodiac) return null;
             const distance = Math.hypot(x - CONFIG.center, y - CONFIG.center);
             return (distance >= CONFIG.radii.decan && distance <= CONFIG.radii.outer) 
                 ? Utils.getSignFromAngle(Utils.getAngleFromPos(x, y)) : null;
         },
+        
+        // Find house at given coordinates
         getHouseAt: (x, y) => {
             const distance = Math.hypot(x - CONFIG.center, y - CONFIG.center);
             return distance <= CONFIG.radii.inner ? Utils.getHouseFromAngle(Utils.getAngleFromPos(x, y)) : null;
         },
+        
+        // Check if coordinates are in zodiac ring
         isInZodiacRing: (x, y) => {
             if (state.hideZodiac) return false;
             const distance = Math.hypot(x - CONFIG.center, y - CONFIG.center);
             return distance >= CONFIG.radii.decan && distance <= CONFIG.radii.outer;
         },
+        
+        // Find angle control handles
         getAngleControlAt: (x, y) => {
             if (!document.getElementById('showAngles')?.checked) return null;
             const controls = Renderer.getAngleControlPoints();
@@ -237,8 +334,9 @@ const AstrologyChart = (() => {
         }
     };
 
-    // High-Performance Drawing System
+    // === DRAWING SYSTEM ===
     const DrawingSystem = {
+        // Calculate distance from point to line segment
         getDistanceToLine: (px, py, x1, y1, x2, y2) => {
             const A = px - x1, B = py - y1, C = x2 - x1, D = y2 - y1;
             const dot = A * C + B * D, lenSq = C * C + D * D;
@@ -246,25 +344,26 @@ const AstrologyChart = (() => {
             const param = Math.max(0, Math.min(1, dot / lenSq));
             return Math.hypot(px - (x1 + param * C), py - (y1 + param * D));
         },
+        
+        // Erase drawing paths at point
         eraseAtPoint: (x, y, eraserSize) => {
-            // Mobile optimization: Larger effective eraser size and more aggressive erasing
             const baseSize = CONFIG.isMobile ? Math.max(eraserSize * 8, 20) : Math.max(eraserSize * 4, 10);
             const effectiveRadius = baseSize / 2;
-            const radiusSquared = effectiveRadius * effectiveRadius; 
+            const radiusSquared = effectiveRadius * effectiveRadius;
             const pathsToRemove = [], newPathsToAdd = [];
             
             state.drawingPaths.forEach((path, pathIndex) => {
                 if (path[0]?.type === 'line') {
+                    // Handle line erasing
                     if (path.length >= 2) {
                         const lineDistance = DrawingSystem.getDistanceToLine(x, y, path[0].x, path[0].y, path[path.length - 1].x, path[path.length - 1].y);
-                        // Consider line thickness for accurate erasing
                         const lineThickness = path[0].size || 2;
                         if (lineDistance <= effectiveRadius + lineThickness) {
                             pathsToRemove.push(pathIndex);
                         }
                     }
                 } else {
-                    // Enhanced path erasing with mobile-friendly segmentation
+                    // Handle path segmentation for erasing
                     const segments = [];
                     let currentSegment = [];
                     let erased = false;
@@ -273,6 +372,7 @@ const AstrologyChart = (() => {
                         const distanceSquared = (x - point.x) * (x - point.x) + (y - point.y) * (y - point.y);
                         const brushThickness = point.size || 2;
                         const totalRadiusSquared = (effectiveRadius + brushThickness) * (effectiveRadius + brushThickness);
+                        
                         if (distanceSquared > totalRadiusSquared) {
                             currentSegment.push(point);
                         } else {
@@ -296,29 +396,38 @@ const AstrologyChart = (() => {
                     }
                 }
             });
+            
             // Batch removal for performance
             pathsToRemove.reverse().forEach(index => state.drawingPaths.splice(index, 1));
             state.drawingPaths.push(...newPathsToAdd);
         },
+        
+        // Render all drawing paths
         drawPaths: () => {
             const ctx = CONFIG.ctx;
             state.drawingPaths.forEach(path => {
                 if (path.length < 2) return;
+                
                 ctx.strokeStyle = path[0].color;
                 ctx.lineWidth = path[0].size;
                 ctx.lineCap = 'round';
                 ctx.lineJoin = 'round';
                 ctx.beginPath();
+                
                 if (path[0].type === 'line') {
                     ctx.moveTo(path[0].x, path[0].y);
                     ctx.lineTo(path[path.length - 1].x, path[path.length - 1].y);
                 } else {
                     ctx.moveTo(path[0].x, path[0].y);
-                    for (let i = 1; i < path.length; i++) ctx.lineTo(path[i].x, path[i].y);
+                    for (let i = 1; i < path.length; i++) {
+                        ctx.lineTo(path[i].x, path[i].y);
+                    }
                 }
                 ctx.stroke();
             });
         },
+        
+        // Update eraser visual indicator
         updateEraserIndicator: (x, y) => {
             const indicator = document.getElementById('eraserIndicator');
             const tool = document.getElementById('drawTool')?.value;
@@ -326,8 +435,6 @@ const AstrologyChart = (() => {
             if (tool === 'eraser' && state.mode === 'draw') {
                 const rect = CONFIG.canvas.getBoundingClientRect();
                 const eraserSize = parseInt(document.getElementById('drawSize')?.value || 10);
-                
-                // Mobile-optimized size calculation
                 const realEraserSize = CONFIG.isMobile ? Math.max(eraserSize * 8, 20) : Math.max(eraserSize * 4, 10);
                 const effectiveSize = realEraserSize;
                 
@@ -337,7 +444,6 @@ const AstrologyChart = (() => {
                 const screenX = rect.left + window.scrollX + (x * scaleX);
                 const screenY = rect.top + window.scrollY + (y * scaleY);
                 
-                // Mobile-enhanced indicator styling
                 const borderStyle = CONFIG.isMobile ? '3px solid #fff' : '2px dashed #fff';
                 const opacity = CONFIG.isMobile ? '0.8' : '1';
                 
@@ -361,12 +467,14 @@ const AstrologyChart = (() => {
         }
     };
 
-    // Professional Rendering Engine
+    // === RENDERING ENGINE ===
     const Renderer = {
+        // Get angle control point positions
         getAngleControlPoints: () => {
             const ascAngle = Utils.degToRad(180 - state.ascendantOffset);
             const mcAngle = Utils.degToRad(180 - state.ascendantOffset - 270);
             const controlRadius = CONFIG.radii.outer + 35;
+            
             return {
                 asc: {x: CONFIG.center + Math.cos(ascAngle) * controlRadius, y: CONFIG.center + Math.sin(ascAngle) * controlRadius},
                 dsc: {x: CONFIG.center - Math.cos(ascAngle) * controlRadius, y: CONFIG.center - Math.sin(ascAngle) * controlRadius},
@@ -374,26 +482,33 @@ const AstrologyChart = (() => {
                 ic: {x: CONFIG.center - Math.cos(mcAngle) * controlRadius, y: CONFIG.center - Math.sin(mcAngle) * controlRadius}
             };
         },
+        
+        // Draw bounds system (Egyptian, Ptolemy, Chaldean)
         drawBoundsSystem: (boundsData, outerRadius, innerRadius, color) => {
             const ctx = CONFIG.ctx;
+            
             for (let i = 0; i < 12; i++) {
                 const bounds = boundsData[i];
                 let prevDegree = 0;
+                
                 bounds.forEach(([planet, degree]) => {
                     const startAngle = Utils.degToRad(180 - (i * 30 + prevDegree) - state.zodiacOffset);
                     const endAngle = Utils.degToRad(180 - (i * 30 + degree) - state.zodiacOffset);
                     
+                    // Draw bound arc
                     ctx.strokeStyle = color;
                     ctx.lineWidth = 1;
                     ctx.beginPath();
                     ctx.arc(CONFIG.center, CONFIG.center, outerRadius, startAngle, endAngle);
                     ctx.stroke();
                     
+                    // Draw divider line
                     ctx.beginPath();
                     ctx.moveTo(CONFIG.center + Math.cos(endAngle) * innerRadius, CONFIG.center + Math.sin(endAngle) * innerRadius);
                     ctx.lineTo(CONFIG.center + Math.cos(endAngle) * outerRadius, CONFIG.center + Math.sin(endAngle) * outerRadius);
                     ctx.stroke();
                     
+                    // Draw planet symbol
                     const midAngle = (startAngle + endAngle) / 2;
                     const textRadius = (outerRadius + innerRadius) / 2;
                     
@@ -406,13 +521,17 @@ const AstrologyChart = (() => {
                 });
             }
         },
+        
+        // Main chart rendering function
         drawChart: () => {
             const ctx = CONFIG.ctx;
             ctx.clearRect(0, 0, CONFIG.canvas.width, CONFIG.canvas.height);
             
-            // Base rings
+            // === DRAW BASE RINGS ===
             ctx.strokeStyle = '#555';
             ctx.lineWidth = 2;
+            
+            // Zodiac rings
             if (!state.hideZodiac) {
                 [CONFIG.radii.outer, CONFIG.radii.decan].forEach(r => {
                     ctx.beginPath();
@@ -420,6 +539,8 @@ const AstrologyChart = (() => {
                     ctx.stroke();
                 });
             }
+            
+            // House ring
             ctx.beginPath();
             ctx.arc(CONFIG.center, CONFIG.center, CONFIG.radii.inner, 0, Math.PI * 2);
             ctx.stroke();
@@ -434,15 +555,15 @@ const AstrologyChart = (() => {
             ctx.beginPath();
             ctx.arc(CONFIG.center, CONFIG.center, CONFIG.radii.aspect, 0, Math.PI * 2);
             ctx.stroke();
-
-            DrawingSystem.drawPaths();
             
+            // Redraw aspect circle outline
             ctx.strokeStyle = '#444';
             ctx.lineWidth = 1;
             ctx.beginPath();
             ctx.arc(CONFIG.center, CONFIG.center, CONFIG.radii.aspect, 0, Math.PI * 2);
             ctx.stroke();
 
+            // === DRAW PLANETARY CIRCLES ===
             const planetaryCircles = [
                 {key: 'saturn', color: '#8B4513', show: 'showSaturnCircle', label: '♄'},
                 {key: 'jupiter', color: '#4169E1', show: 'showJupiterCircle', label: '♃'},
@@ -453,28 +574,29 @@ const AstrologyChart = (() => {
                 {key: 'moon', color: '#C0C0C0', show: 'showMoonCircle', label: '☽'}
             ];
 
-        planetaryCircles.forEach(circle => {
-            const checkbox = document.getElementById(circle.show);
-            if (checkbox && checkbox.checked) {
-                ctx.strokeStyle = circle.color;
-                ctx.lineWidth = 1;
-                ctx.setLineDash([2, 2]); // Dashed line for planetary circles
-                ctx.beginPath();
-                ctx.arc(CONFIG.center, CONFIG.center, CONFIG.radii[circle.key], 0, Math.PI * 2);
-                ctx.stroke();
-                ctx.setLineDash([]); // Reset line dash
-                
-                // Optional: Add circle labels
-                ctx.fillStyle = circle.color;
-                ctx.font = CONFIG.isMobile ? '12px Arial' : '14px Arial';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(circle.label, CONFIG.center + CONFIG.radii[circle.key] + 15, CONFIG.center);
-            }
-        });
+            planetaryCircles.forEach(circle => {
+                const checkbox = document.getElementById(circle.show);
+                if (checkbox?.checked) {
+                    ctx.strokeStyle = circle.color;
+                    ctx.lineWidth = 1;
+                    ctx.setLineDash([2, 2]);
+                    ctx.beginPath();
+                    ctx.arc(CONFIG.center, CONFIG.center, CONFIG.radii[circle.key], 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    
+                    // Circle labels
+                    ctx.fillStyle = circle.color;
+                    ctx.font = CONFIG.isMobile ? '12px Arial' : '14px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(circle.label, CONFIG.center + CONFIG.radii[circle.key] + 15, CONFIG.center);
+                }
+            });
             
-            // Bounds systems
+            // === DRAW BOUNDS SYSTEMS ===
             const checkElement = (id) => document.getElementById(id)?.checked;
+            
             if (checkElement('showEgyptianBounds')) {
                 ctx.strokeStyle = CONFIG.colors.dim;
                 ctx.lineWidth = 1;
@@ -483,6 +605,7 @@ const AstrologyChart = (() => {
                 ctx.stroke();
                 Renderer.drawBoundsSystem(ASTRO_DATA.egyptianBounds, CONFIG.radii.outer, CONFIG.radii.egyptian, '#8B4513');
             }
+            
             if (checkElement('showPtolemyBounds')) {
                 ctx.strokeStyle = CONFIG.colors.dim;
                 ctx.lineWidth = 1;
@@ -491,6 +614,7 @@ const AstrologyChart = (() => {
                 ctx.stroke();
                 Renderer.drawBoundsSystem(ASTRO_DATA.ptolemyBounds, CONFIG.radii.egyptian, CONFIG.radii.ptolemy, '#4682B4');
             }
+            
             if (checkElement('showChaldeanBounds')) {
                 ctx.strokeStyle = CONFIG.colors.dim;
                 ctx.lineWidth = 1;
@@ -500,9 +624,11 @@ const AstrologyChart = (() => {
                 Renderer.drawBoundsSystem(ASTRO_DATA.chaldeanBounds, CONFIG.radii.ptolemy, CONFIG.radii.chaldean, '#6A5ACD');
             }
             
-            // Angles
+            // === DRAW ANGLES ===
             if (checkElement('showAngles')) {
                 const controls = Renderer.getAngleControlPoints();
+                
+                // Draw angle lines
                 ctx.strokeStyle = '#FFD700';
                 ctx.lineWidth = 3;
                 ctx.beginPath();
@@ -514,6 +640,7 @@ const AstrologyChart = (() => {
                 ctx.lineTo(controls.ic.x, controls.ic.y);
                 ctx.stroke();
                 
+                // Draw control points
                 ctx.fillStyle = '#FFD700';
                 Object.values(controls).forEach(control => {
                     ctx.beginPath();
@@ -521,6 +648,7 @@ const AstrologyChart = (() => {
                     ctx.fill();
                 });
                 
+                // Calculate angle positions
                 const getSignInfo = (offset) => {
                     const signIndex = Utils.getSignFromAngle((state.ascendantOffset + offset) % 360);
                     const degree = Math.floor(Utils.normalizeAngle((state.ascendantOffset + offset) - state.zodiacOffset) % 30);
@@ -529,9 +657,11 @@ const AstrologyChart = (() => {
                 
                 const asc = getSignInfo(0), dsc = getSignInfo(180), mc = getSignInfo(270), ic = getSignInfo(90);
                 
+                // Draw angle labels
                 ctx.font = CONFIG.isMobile ? '10px Arial' : 'bold 12px Arial';
                 ctx.textAlign = 'center';
                 const labelOffset = CONFIG.isMobile ? 20 : 30;
+                
                 ctx.fillText(`ASC - ${ASTRO_DATA.signNames[asc.signIndex]} ${asc.degree}°`, controls.asc.x, controls.asc.y + labelOffset);
                 ctx.fillText(`DSC - ${ASTRO_DATA.signNames[dsc.signIndex]} ${dsc.degree}°`, controls.dsc.x, controls.dsc.y + labelOffset);
                 ctx.fillText(`MC - ${ASTRO_DATA.signNames[mc.signIndex]} ${mc.degree}°`, controls.mc.x, controls.mc.y - labelOffset);
@@ -543,13 +673,14 @@ const AstrologyChart = (() => {
                 ctx.fillText(`North`, controls.ic.x, controls.ic.y + labelOffset + 15);
             }
             
-            // Zodiac signs
+            // === DRAW ZODIAC SIGNS ===
             if (!state.hideZodiac) {
                 for (let i = 0; i < 12; i++) {
                     const startAngle = Utils.degToRad(180 - (i * 30) - state.zodiacOffset);
                     const midAngle = Utils.degToRad(180 - (i * 30 + 15) - state.zodiacOffset);
                     const isSelected = state.selectedSign === i;
                     
+                    // Draw sign dividers
                     ctx.strokeStyle = state.mode === 'zodiac' ? (isSelected ? '#FF6666' : '#888') : '#444';
                     ctx.lineWidth = state.mode === 'zodiac' ? (isSelected ? 3 : 2) : 1;
                     ctx.beginPath();
@@ -557,6 +688,7 @@ const AstrologyChart = (() => {
                     ctx.lineTo(CONFIG.center + Math.cos(startAngle) * CONFIG.radii.outer, CONFIG.center + Math.sin(startAngle) * CONFIG.radii.outer);
                     ctx.stroke();
                     
+                    // Draw sign symbols
                     const signR = (CONFIG.radii.decan + CONFIG.radii.outer) / 2;
                     const x = CONFIG.center + Math.cos(midAngle) * signR;
                     const y = CONFIG.center + Math.sin(midAngle) * signR;
@@ -567,7 +699,9 @@ const AstrologyChart = (() => {
                     ctx.textBaseline = 'middle';
                     ctx.fillText(ASTRO_DATA.signs[i], x, y);
                     
+                    // Draw sign information
                     let yOffset = CONFIG.isMobile ? 15 : 20;
+                    
                     if (checkElement('showDignities')) {
                         ctx.font = CONFIG.isMobile ? '14px Arial' : '18px Arial';
                         ctx.fillStyle = '#ccc';
@@ -599,11 +733,13 @@ const AstrologyChart = (() => {
                     }
                 }
                 
-                // Decans
+                // === DRAW DECANS ===
                 if (checkElement('showDecans')) {
                     for (let i = 0; i < 12; i++) {
                         for (let d = 0; d < 3; d++) {
                             const decanAngle = Utils.degToRad(180 - (i * 30 + d * 10) - state.zodiacOffset);
+                            
+                            // Draw decan dividers
                             ctx.strokeStyle = '#666';
                             ctx.lineWidth = 1;
                             ctx.beginPath();
@@ -611,6 +747,7 @@ const AstrologyChart = (() => {
                             ctx.lineTo(CONFIG.center + Math.cos(decanAngle) * CONFIG.radii.decan, CONFIG.center + Math.sin(decanAngle) * CONFIG.radii.decan);
                             ctx.stroke();
                             
+                            // Draw decan rulers
                             const decanMidAngle = Utils.degToRad(180 - (i * 30 + d * 10 + 5) - state.zodiacOffset);
                             const decanRadius = (CONFIG.radii.inner + CONFIG.radii.decan) / 2;
                             const dx = CONFIG.center + Math.cos(decanMidAngle) * decanRadius;
@@ -626,9 +763,11 @@ const AstrologyChart = (() => {
                 }
             }
             
-            // Houses
+            // === DRAW HOUSES ===
             for (let i = 0; i < 12; i++) {
                 const angle = Utils.degToRad(180 - (i * 30));
+                
+                // Draw house dividers
                 ctx.strokeStyle = state.mode === 'houses' ? '#FF6666' : '#444';
                 ctx.lineWidth = state.mode === 'houses' ? 2 : 1;
                 ctx.beginPath();
@@ -636,6 +775,7 @@ const AstrologyChart = (() => {
                 ctx.lineTo(CONFIG.center + Math.cos(angle) * CONFIG.radii.inner, CONFIG.center + Math.sin(angle) * CONFIG.radii.inner);
                 ctx.stroke();
                 
+                // Draw house numbers
                 const houseR = (CONFIG.radii.aspect + CONFIG.radii.inner) / 2;
                 const midAngle = Utils.degToRad(180 - (i * 30 + 15));
                 const x = CONFIG.center + Math.cos(midAngle) * houseR;
@@ -647,6 +787,7 @@ const AstrologyChart = (() => {
                 ctx.textBaseline = 'middle';
                 ctx.fillText((i + 1).toString(), x, y);
                 
+                // Draw house information
                 let yOffset = CONFIG.isMobile ? 12 : 15;
                 const houseChecks = [
                     [checkElement('showHouseSect'), ASTRO_DATA.houseSect[i], '#ff9999'],
@@ -665,7 +806,7 @@ const AstrologyChart = (() => {
                 });
             }
             
-            // Planets
+            // === DRAW PLANETS ===
             if (!state.hidePlanets) {
                 planets.forEach((planet, index) => {
                     const pos = Utils.getPlanetPos(planet.angle, planet.symbol, planet);
@@ -674,34 +815,40 @@ const AstrologyChart = (() => {
                     const dignity = Utils.getDignity(planet.symbol, signIndex);
                     const showCircles = document.getElementById('showPlanetCircles')?.checked !== false;
                     
+                    // Draw planet circles
                     if (planet.showCircle !== false && showCircles) {
-                    if (checkElement('showDignities')) {
-                        ctx.strokeStyle = Utils.getDignityColor(dignity);
-                        ctx.lineWidth = 4;
-                    } else {
-                        ctx.strokeStyle = state.mode === 'planets' ? (isSelected ? '#FF6666' : '#FFF') : '#666';
-                        ctx.lineWidth = state.mode === 'planets' ? (isSelected ? 4 : 3) : 2;
-                    }
+                        if (checkElement('showDignities')) {
+                            ctx.strokeStyle = Utils.getDignityColor(dignity);
+                            ctx.lineWidth = 4;
+                        } else {
+                            ctx.strokeStyle = state.mode === 'planets' ? (isSelected ? '#FF6666' : '#FFF') : '#666';
+                            ctx.lineWidth = state.mode === 'planets' ? (isSelected ? 4 : 3) : 2;
+                        }
 
-                    ctx.fillStyle = planet.color;
-                    ctx.beginPath();
-                    ctx.arc(pos.x, pos.y, CONFIG.isMobile ? 20 : 20, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.stroke();
-                                }
+                        ctx.fillStyle = planet.color;
+                        ctx.beginPath();
+                        ctx.arc(pos.x, pos.y, CONFIG.isMobile ? 20 : 20, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.stroke();
+                    }
+                    
+                    // Draw planet symbols
                     ctx.fillStyle = showCircles ? (planet.textColor || '#000') : planet.color;
                     ctx.font = CONFIG.isMobile ? '18px Arial' : 'bold 24px Arial';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
                     ctx.fillText(planet.symbol, pos.x, pos.y);
                     
+                    // Draw delete indicator in planets mode
                     if (state.mode === 'planets') {
                         ctx.fillStyle = '#FF4444';
                         ctx.font = CONFIG.isMobile ? '12px Arial' : 'bold 16px Arial';
                         ctx.fillText('×', pos.x + 12, pos.y - 12);
                     }
                     
+                    // Draw planet information
                     let yOffset = CONFIG.isMobile ? 20 : 25;
+                    
                     if (checkElement('showDignities')) {
                         ctx.fillStyle = Utils.getDignityColor(dignity);
                         ctx.font = CONFIG.isMobile ? '10px Arial' : 'bold 12px Arial';
@@ -734,11 +881,14 @@ const AstrologyChart = (() => {
                     }
                 });
             }
+        // Draw user drawings
+        DrawingSystem.drawPaths();
         }
     };
 
-    // User Interface Controller
+    // === USER INTERFACE CONTROLLER ===
     const UI = {
+        // Display keyword information for teaching
         showKeywords: (type, name) => {
             const panel = document.getElementById('keywordsPanel');
             const keywordList = keywords[type + 's']?.[name];
@@ -746,31 +896,42 @@ const AstrologyChart = (() => {
                 panel.innerHTML = `<h3>${name}</h3><ul>${keywordList.map(k => `<li>• ${k}</li>`).join('')}</ul>`;
             }
         },
+        
+        // Set application mode
         setMode: newMode => {
             state.mode = newMode;
             state.selectedSign = null;
             state.selectedPlanet = null;
+            
+            // Update UI buttons
             document.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
             document.getElementById(newMode + 'Btn')?.classList.add('active');
             
+            // Show/hide controls based on mode
             const planetSelect = document.getElementById('planetSelect');
             const drawControls = document.getElementById('drawControls');
             if (planetSelect) planetSelect.style.display = newMode === 'planets' ? 'inline' : 'none';
             if (drawControls) drawControls.style.display = newMode === 'draw' ? 'block' : 'none';
             
+            // Set cursor style
             const tool = document.getElementById('drawTool')?.value || 'pencil';
             CONFIG.canvas.style.cursor = newMode === 'draw' ? (tool === 'eraser' ? 'none' : 'crosshair') : 'default';
             if (newMode !== 'draw') document.getElementById('eraserIndicator').style.display = 'none';
+            
             UI.updateInfo();
             Renderer.drawChart();
         },
+        
+        // Update information display
         updateInfo: text => {
             const info = document.getElementById('info');
             if (!info) return;
+            
             if (text) {
                 info.innerHTML = text;
                 return;
             }
+            
             const messages = {
                 zodiac: 'Click sign to select, rotate with arrows or drag • Click for keywords',
                 houses: 'Drag planets to see houses • Click for keywords',
@@ -779,40 +940,64 @@ const AstrologyChart = (() => {
             };
             info.textContent = messages[state.mode] || '';
         },
+        
+        // Clear all drawings
         clearDrawing: () => {
-            Object.assign(state, {drawingPaths: [], currentPath: [], lineStartPoint: null, isDrawing: false, isErasing: false});
+            Object.assign(state, {
+                drawingPaths: [],
+                currentPath: [],
+                lineStartPoint: null,
+                isDrawing: false,
+                isErasing: false
+            });
             document.getElementById('eraserIndicator').style.display = 'none';
             Renderer.drawChart();
         },
+        
+        // Reset entire chart to defaults
         resetChart: () => {
             Object.assign(state, {
-                zodiacOffset: 0, ascendantOffset: 0, selectedSign: null, selectedPlanet: null,
-                drawingPaths: [], currentPath: [], lineStartPoint: null, isDrawing: false, isErasing: false,
-                isDragging: false, dragTarget: null, hideZodiac: false, hidePlanets: false
+                zodiacOffset: 0,
+                ascendantOffset: 0,
+                selectedSign: null,
+                selectedPlanet: null,
+                drawingPaths: [],
+                currentPath: [],
+                lineStartPoint: null,
+                isDrawing: false,
+                isErasing: false,
+                isDragging: false,
+                dragTarget: null,
+                hideZodiac: false,
+                hidePlanets: false
             });
+            
             document.getElementById('eraserIndicator').style.display = 'none';
             const hideZodiac = document.getElementById('hideZodiac');
             const hidePlanets = document.getElementById('hidePlanets');
             if (hideZodiac) hideZodiac.checked = false;
             if (hidePlanets) hidePlanets.checked = false;
             
+            // Reset planets to default positions
             planets = [
-                {symbol:'☉',name:'Sun',angle:120,color:'#FFD700'},
-                {symbol:'☽',name:'Moon',angle:90,color:'#C0C0C0'},
-                {symbol:'♂',name:'Mars',angle:0,color:'#FF4500'},
-                {symbol:'♀',name:'Venus',angle:30,color:'#32CD32'},
-                {symbol:'☿',name:'Mercury',angle:60,color:'#FFA500'},
-                {symbol:'♃',name:'Jupiter',angle:240,color:'#4169E1'},
-                {symbol:'♄',name:'Saturn',angle:270,color:'#8B4513'}
+                {symbol:'☉', name:'Sun', angle:120, color:'#FFD700'},
+                {symbol:'☽', name:'Moon', angle:90, color:'#C0C0C0'},
+                {symbol:'♂', name:'Mars', angle:0, color:'#FF4500'},
+                {symbol:'♀', name:'Venus', angle:30, color:'#32CD32'},
+                {symbol:'☿', name:'Mercury', angle:60, color:'#FFA500'},
+                {symbol:'♃', name:'Jupiter', angle:240, color:'#4169E1'},
+                {symbol:'♄', name:'Saturn', angle:270, color:'#8B4513'}
             ];
+            
             UI.setMode('zodiac');
             UI.updateInfo('Chart reset');
             Renderer.drawChart();
         }
     };
 
-    // Unified Event Handler System
+    // === EVENT HANDLING SYSTEM ===
     const Events = {
+        // Unified pointer event handler for mouse and touch
         handlePointerEvent: (e, action) => {
             e.preventDefault();
             const pos = Utils.getMousePos(e);
@@ -821,8 +1006,10 @@ const AstrologyChart = (() => {
             else if (action === 'end') Events.handlePointerEnd();
         },
         
+        // Handle click events for selection
         handleClick: e => {
             if (state.mode === 'draw' || state.isDragging) return;
+            
             const pos = Utils.getMousePos(e);
             const planetData = HitDetection.getPlanetAt(pos.x, pos.y);
             const signIndex = HitDetection.getSignAt(pos.x, pos.y);
@@ -847,6 +1034,7 @@ const AstrologyChart = (() => {
             }
         },
         
+        // Handle pointer/mouse down events
         handlePointerStart: pos => {
             if (state.mode === 'draw') {
                 const tool = document.getElementById('drawTool')?.value || 'pencil';
@@ -872,6 +1060,7 @@ const AstrologyChart = (() => {
                 return;
             }
             
+            // Check for angle control handles
             const angleControl = HitDetection.getAngleControlAt(pos.x, pos.y);
             if (angleControl) {
                 state.isDragging = true;
@@ -880,9 +1069,12 @@ const AstrologyChart = (() => {
                 return;
             }
             
+            // Check for planet interaction
             const planetData = HitDetection.getPlanetAt(pos.x, pos.y);
             if (planetData) {
                 const planetPos = Utils.getPlanetPos(planetData.planet.angle, planetData.planet.symbol, planetData.planet);
+                
+                // Handle planet deletion in planets mode
                 if (state.mode === 'planets' && pos.x > planetPos.x + 8 && pos.y < planetPos.y - 8) {
                     planets.splice(planetData.index, 1);
                     if (state.selectedPlanet === planetData.index) state.selectedPlanet = null;
@@ -891,16 +1083,19 @@ const AstrologyChart = (() => {
                     UI.updateInfo('Planet deleted');
                     return;
                 }
+                
                 state.isDragging = true;
                 state.dragTarget = planetData.planet;
                 if (state.mode === 'planets') state.selectedPlanet = planetData.index;
             } else if (state.mode === 'zodiac' && HitDetection.isInZodiacRing(pos.x, pos.y)) {
+                // Handle zodiac ring dragging
                 state.isDragging = true;
                 state.dragTarget = 'zodiac';
                 state.lastZodiacAngle = Utils.getAngleFromPos(pos.x, pos.y);
             }
         },
         
+        // Handle pointer/mouse move events
         handlePointerMove: pos => {
             if (state.mode === 'draw') {
                 const tool = document.getElementById('drawTool')?.value || 'pencil';
@@ -914,6 +1109,8 @@ const AstrologyChart = (() => {
                     Renderer.drawChart();
                 } else if (tool === 'pencil' && state.isDrawing && state.currentPath.length > 0) {
                     state.currentPath.push({x: pos.x, y: pos.y, color, size, type: 'pencil'});
+                    
+                    // Real-time drawing feedback
                     if (state.currentPath.length > 1) {
                         const ctx = CONFIG.ctx;
                         ctx.strokeStyle = color;
@@ -928,6 +1125,7 @@ const AstrologyChart = (() => {
                         ctx.stroke();
                     }
                 } else if (tool === 'line' && state.lineStartPoint) {
+                    // Preview line while drawing
                     Renderer.drawChart();
                     const ctx = CONFIG.ctx;
                     ctx.strokeStyle = color;
@@ -946,15 +1144,16 @@ const AstrologyChart = (() => {
             if (!state.isDragging || !state.dragTarget) return;
             
             if (state.dragTarget === 'zodiac') {
+                // Handle zodiac rotation
                 const currentAngle = Utils.getAngleFromPos(pos.x, pos.y);
                 const deltaAngle = currentAngle - state.lastZodiacAngle;
                 state.zodiacOffset = Utils.normalizeAngle(state.zodiacOffset + deltaAngle);
                 state.lastZodiacAngle = currentAngle;
                 Renderer.drawChart();
             } else if (state.dragTarget === 'angle-control') {
+                // Handle angle control dragging
                 state.ascendantOffset = Utils.getAngleFromPos(pos.x, pos.y);
                 
-                // Show ASC degrees only when dragging angle controls
                 if (state.dragAngleControl === 'asc') {
                     const ascSignIndex = Utils.getSignFromAngle(state.ascendantOffset);
                     const ascDegree = Math.floor(Utils.normalizeAngle(state.ascendantOffset - state.zodiacOffset) % 30);
@@ -962,16 +1161,18 @@ const AstrologyChart = (() => {
                 }
                 Renderer.drawChart();
             } else {
+                // Handle planet dragging
                 const isFreeMovement = document.getElementById('freeSymbolMovement')?.checked || FREE_SYMBOLS.includes(state.dragTarget.symbol);
                 
                 if (isFreeMovement) {
                     state.dragTarget.freeX = pos.x;
                     state.dragTarget.freeY = pos.y;
-                    // 🔧 FIX: Always update angle so info shows correctly
                     state.dragTarget.angle = Utils.getAngleFromPos(pos.x, pos.y);
                 } else {
                     state.dragTarget.angle = Utils.getAngleFromPos(pos.x, pos.y);
                 }
+                
+                // Update info display while dragging
                 const signIndex = Utils.getSignFromAngle(state.dragTarget.angle);
                 const houseIndex = Utils.getHouseFromAngle(state.dragTarget.angle);
                 const degree = Math.floor(Utils.normalizeAngle(state.dragTarget.angle - state.zodiacOffset) % 30);
@@ -987,6 +1188,7 @@ const AstrologyChart = (() => {
             }
         },
         
+        // Handle pointer/mouse up events
         handlePointerEnd: () => {
             if (state.mode === 'draw') {
                 if (state.isDrawing && state.currentPath.length > 0) {
@@ -996,12 +1198,14 @@ const AstrologyChart = (() => {
                 state.isDrawing = false;
                 state.isErasing = false;
             }
+            
             state.isDragging = false;
             state.dragTarget = null;
             state.dragAngleControl = null;
             UI.updateInfo();
         },
         
+        // Handle keyboard shortcuts
         handleKeyDown: e => {
             const keyMap = {
                 'r': UI.resetChart,
@@ -1040,13 +1244,13 @@ const AstrologyChart = (() => {
                 'e': () => { if (state.mode === 'draw') setDrawTool('eraser'); },
                 'c': () => { if (state.mode === 'draw') UI.clearDrawing(); },
                 '-': () => { 
-                        if (state.mode === 'planets' && state.selectedPlanet !== null) { 
-                            planets.splice(state.selectedPlanet, 1); 
-                            state.selectedPlanet = null; 
-                            Renderer.drawChart(); 
-                            UI.updateInfo('Planet deleted'); 
-                        } 
-                    }
+                    if (state.mode === 'planets' && state.selectedPlanet !== null) { 
+                        planets.splice(state.selectedPlanet, 1); 
+                        state.selectedPlanet = null; 
+                        Renderer.drawChart(); 
+                        UI.updateInfo('Planet deleted'); 
+                    } 
+                }
             };
 
             if (keyMap[e.key.toLowerCase()]) {
@@ -1055,8 +1259,10 @@ const AstrologyChart = (() => {
                 return;
             }
 
+            // Handle arrow key navigation
             if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
                 const increment = e.key === 'ArrowLeft' ? 1 : -1;
+                
                 if (state.mode === 'zodiac' && state.selectedSign !== null) {
                     state.zodiacOffset = Utils.normalizeAngle(state.zodiacOffset + increment);
                     Renderer.drawChart();
@@ -1074,7 +1280,9 @@ const AstrologyChart = (() => {
         }
     };
 
-    // Utility Functions
+    // === UTILITY FUNCTIONS ===
+    
+    // Toggle checkbox state and redraw
     const toggleCheckbox = (id) => {
         const checkbox = document.getElementById(id);
         if (checkbox) {
@@ -1085,17 +1293,18 @@ const AstrologyChart = (() => {
         }
     };
 
+    // Set drawing tool
     const setDrawTool = (tool) => {
         const drawTool = document.getElementById('drawTool');
         if (drawTool) drawTool.value = tool;
     };
 
-    // Initialization
+    // === INITIALIZATION SYSTEM ===
     const initEvents = () => {
         const canvas = CONFIG.canvas;
         if (!canvas) return;
 
-        // Touch events for mobile
+        // Event listeners for touch and mouse
         if (CONFIG.isMobile) {
             canvas.addEventListener('touchstart', e => Events.handlePointerEvent(e, 'start'), {passive: false});
             canvas.addEventListener('touchmove', e => Events.handlePointerEvent(e, 'move'), {passive: false});
@@ -1106,27 +1315,34 @@ const AstrologyChart = (() => {
             canvas.addEventListener('mouseup', e => Events.handlePointerEvent(e, 'end'));
         }
 
+        // Click handlers
         canvas.addEventListener('click', Events.handleClick);
         canvas.addEventListener('touchend', e => {
-        if (!state.isDragging && e.changedTouches.length === 1) Events.handleClick(e);
+            if (!state.isDragging && e.changedTouches.length === 1) Events.handleClick(e);
         });
+        
+        // Mouse leave handler for eraser indicator
         canvas.addEventListener('mouseleave', () => {
             const indicator = document.getElementById('eraserIndicator');
             if (indicator) indicator.style.display = 'none';
         });
+        
+        // Keyboard shortcuts
         document.addEventListener('keydown', Events.handleKeyDown);
 
-        // Planet selector
+        // Planet selector dropdown
         const planetSelect = document.getElementById('planetSelect');
         if (planetSelect) {
             planetSelect.addEventListener('change', e => {
                 if (!e.target.value) return;
+                
                 const planetData = {
                     symbols: {'☉':'Sun','☽':'Moon','☿':'Mercury','♀':'Venus','♂':'Mars','♃':'Jupiter','♄':'Saturn','☊':'North Node','☋':'South Node','⦻':'Part of Fortune', '℞':'Retrograde', '⭐':'Star'},
                     colors: {'☉':'#FFD700','☽':'#C0C0C0','☿':'#FFA500','♀':'#32CD32','♂':'#FF4500','♃':'#4169E1','♄':'#8B4513','☊':'#FFE4B5','☋':'#DDA0DD','⦻':'#20B2AA', '℞':'#20B2AA', '⭐':'#20B2AA'},
                     textColors: {'☉':'#000','☽':'#000','☿':'#000','♀':'#000','♂':'#000','♃':'#000','♄':'#000','☊':'#000','☋':'#000','⦻':'#000', '℞':'#FF0000', '⭐':'#FF0000'},
                     showCircle: {'☉':true,'☽':true,'☿':true,'♀':true,'♂':true,'♃':true,'♄':true,'☊':true,'☋':true,'⦻':true, '℞':false, '⭐':false}
                 };
+                
                 planets.push({
                     symbol: e.target.value,
                     name: planetData.symbols[e.target.value],
@@ -1135,12 +1351,13 @@ const AstrologyChart = (() => {
                     textColor: planetData.textColors[e.target.value] || '#000',
                     showCircle: planetData.showCircle[e.target.value] !== false
                 });
+                
                 e.target.value = '';
                 Renderer.drawChart();
             });
         }
 
-        // Draw controls
+        // Drawing tool controls
         const drawTool = document.getElementById('drawTool');
         if (drawTool) {
             drawTool.addEventListener('change', e => {
@@ -1155,6 +1372,7 @@ const AstrologyChart = (() => {
             });
         }
 
+        // Drawing size control
         const drawSize = document.getElementById('drawSize');
         if (drawSize) {
             drawSize.addEventListener('input', e => {
@@ -1163,14 +1381,13 @@ const AstrologyChart = (() => {
             });
         }
 
-        // Checkbox listeners
+        // Checkbox event listeners
         const checkboxIds = [
             'showInfo','showDignities','showQualities','showElements','showSeason','showFigureSigns',
             'showSolarIngress','showFertileBarren','showSignTemps','showSignGenders','showAngles',
             'showPlanetTemps','showPlanetSect','showBeneficMaleficPlanets','showPlanetGender',
             'showHouseSect','showHouseTypes','showhouseJoy','showEgyptianBounds','showPtolemyBounds',
             'showChaldeanBounds','showDecans','showDirections','hideZodiac','hidePlanets',
-            // ADD these new checkbox IDs:
             'showMoonCircle','showMercuryCircle','showVenusCircle','showSunCircle',
             'showMarsCircle','showJupiterCircle','showSaturnCircle', 'showPlanetCircles'
         ];
@@ -1187,28 +1404,33 @@ const AstrologyChart = (() => {
         });
     };
 
-    // Public API
+    // === PUBLIC API ===
     return {
         setMode: UI.setMode,
         updateInfo: UI.updateInfo,
         clearDrawing: UI.clearDrawing,
         resetChart: UI.resetChart,
         drawChart: Renderer.drawChart,
+        
+        // Initialize the application
         init: () => {
             initEvents();
             Renderer.drawChart();
             UI.updateInfo();
-            console.log('Professional Astrology Chart Engine v5.0 - Optimized & Ready');
-            console.log('Keyboard Shortcuts: R-Reset | D-Details | G-Dignities | Q-Qualities | U-Elements | S-Seasons | A-Angles | H-Hide Zodiac | K-Hide Planets | Z-Zodiac | X-Houses | V-Planets | W-Draw');
+            
+            console.log('Professional Astrology Chart Engine v5.1 - Refactored & Ready');
+            console.log('Keyboard Shortcuts: R-Reset | D-Details | G-Dignities | Q-Qualities | M-Elements | S-Seasons | A-Angles | H-Hide Zodiac | K-Hide Planets | Z-Zodiac | X-Houses | V-Planets | W-Draw');
             console.log('Draw Mode: P-Pencil | L-Line | E-Eraser | C-Clear');
         }
     };
 })();
 
-// Global bindings
+// === GLOBAL API BINDINGS ===
 window.setMode = AstrologyChart.setMode;
 window.clearDrawing = AstrologyChart.clearDrawing;
 window.resetChart = AstrologyChart.resetChart;
+
+// Initialize when DOM is ready
 window.addEventListener('load', AstrologyChart.init);
 </script>
 </body>
